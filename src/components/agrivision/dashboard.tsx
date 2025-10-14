@@ -16,9 +16,6 @@ import { ChatTab } from '@/components/agrivision/chat-tab';
 import { mockTomatoDetection, calculateYieldForecast } from '@/lib/mock-data';
 import type { MarketPriceForecastingOutput } from '@/ai/flows/market-price-forecasting';
 import { useToast } from '@/hooks/use-toast';
-import { dataURLtoFile } from '@/lib/utils';
-import { runDetectionModel } from '@/app/actions';
-
 
 export function Dashboard() {
   const { isMobile } = useSidebar();
@@ -67,35 +64,25 @@ export function Dashboard() {
     setDetectionResult(null);
     setForecastResult(null);
 
-    try {
-      let detection: DetectionResult | null = null;
-      if (controls.useDetectionModel) {
-        const response = await runDetectionModel({ photoDataUri: image.url });
-        if (response.success && response.data) {
-          detection = response.data;
-        } else {
-          toast({ variant: 'destructive', title: 'Detection Failed', description: response.error, duration: 5000 });
-          setIsLoading(false);
-          return;
+    // Reverted to always use mock data for stability
+    setTimeout(() => {
+        try {
+            const detection = mockTomatoDetection(image.url!);
+            setDetectionResult(detection);
+            
+            if (detection) {
+                const forecast = calculateYieldForecast(detection, controls);
+                setForecastResult(forecast);
+                // Switch to forecast tab after successful analysis
+                setActiveTab('forecast');
+            }
+        } catch (error) {
+            console.error("Analysis failed:", error);
+            toast({ variant: 'destructive', title: 'Analysis Failed', description: 'An unexpected error occurred with mock data.' });
+        } finally {
+            setIsLoading(false);
         }
-      } else {
-        // Fallback to mock data if model is not used
-        detection = mockTomatoDetection(image.url);
-      }
-      
-      setDetectionResult(detection);
-      if (detection) {
-        const forecast = calculateYieldForecast(detection, controls);
-        setForecastResult(forecast);
-        // Switch to forecast tab after successful analysis
-        setActiveTab('forecast');
-      }
-    } catch (error) {
-        console.error("Analysis failed:", error);
-        toast({ variant: 'destructive', title: 'Analysis Failed', description: 'An unexpected error occurred.' });
-    } finally {
-        setIsLoading(false);
-    }
+    }, 1000); // Simulate network latency
   }, [image.url, controls, toast]);
   
   React.useEffect(() => {
