@@ -62,7 +62,7 @@ const tomatoDetectionFlow = ai.defineFlow(
       outputSchema: TomatoDetectionOutputSchema,
     },
     async (input) => {
-        const { output } = await prompt(input);
-        return output!;
+        const result = await prompt(input);
+        return result.output!;
     }
 );
