@@ -1,3 +1,10 @@
+import { Dashboard } from "@/components/agrivision/dashboard";
+import { SidebarProvider } from "@/components/ui/sidebar";
+
 export default function Home() {
-  return <></>;
+  return (
+    <SidebarProvider>
+      <Dashboard />
+    </SidebarProvider>
+  );
 }
