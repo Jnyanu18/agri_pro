@@ -19,7 +19,6 @@ export function Dashboard() {
   const { isMobile } = useSidebar();
   const [activeTab, setActiveTab] = useState('detection');
   const [isLoading, setIsLoading] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(PlaceHolderImages[0]?.imageUrl || null);
   
   const [controls, setControls] = useState<AppControls>({
@@ -41,12 +40,13 @@ export function Dashboard() {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
   const handleImageUpload = (file: File) => {
-    setImageFile(file);
-    setImageUrl(URL.createObjectURL(file));
-    handleAnalysis(URL.createObjectURL(file));
+    const newImageUrl = URL.createObjectURL(file);
+    setImageUrl(newImageUrl);
+    handleAnalysis(newImageUrl);
   };
   
-  const handleAnalysis = (url: string) => {
+  const handleAnalysis = (url: string | null) => {
+    if (!url) return;
     setIsLoading(true);
     // Simulate model inference
     setTimeout(() => {
@@ -86,7 +86,7 @@ export function Dashboard() {
            <h2 className="font-headline text-xl font-semibold text-primary">AgriVisionAI</h2>
         </SidebarHeader>
         <SidebarContent>
-           <SidebarControls controls={controls} setControls={setControls} onImageUpload={handleImageUpload} onAnalyze={() => imageUrl && handleAnalysis(imageUrl)} isLoading={isLoading} />
+           <SidebarControls controls={controls} setControls={setControls} onImageUpload={handleImageUpload} onAnalyze={() => handleAnalysis(imageUrl)} isLoading={isLoading} />
         </SidebarContent>
       </Sidebar>
       <SidebarInset className="flex flex-col">
