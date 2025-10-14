@@ -1,7 +1,6 @@
 {
   "entities": {
     "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
       "description": "Represents a user profile with associated farm metadata.",
@@ -28,15 +27,10 @@
       ]
     },
     "Plant": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Plant",
       "type": "object",
       "description": "Represents per-image inference data for a plant, including detections, stage counts, and yield estimations.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the plant observation."
-        },
         "uid": {
           "type": "string",
           "description": "Reference to User. (Relationship: User 1:N Plant)"
@@ -49,12 +43,24 @@
           "type": "array",
           "description": "Array of tomato detections in the image.",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "x1": { "type": "number" },
+              "y1": { "type": "number" },
+              "x2": { "type": "number" },
+              "y2": { "type": "number" },
+              "conf": { "type": "number" }
+            }
           }
         },
         "stageCounts": {
-          "type": "string",
-          "description": "Counts of tomatoes in different growth stages (immature, ripening, mature)."
+          "type": "object",
+          "description": "Counts of tomatoes in different growth stages (immature, ripening, mature).",
+          "properties": {
+            "immature": { "type": "number" },
+            "ripening": { "type": "number" },
+            "mature": { "type": "number" }
+          }
         },
         "growthStage": {
           "type": "string",
@@ -73,12 +79,26 @@
           "description": "Estimated sellable yield in kilograms."
         },
         "readyCurve": {
-          "type": "string",
-          "description": "Curve representing the readiness of tomatoes for harvest over time."
+          "type": "array",
+          "description": "Curve representing the readiness of tomatoes for harvest over time.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": { "type": "string" },
+              "readyKg": { "type": "number" }
+            }
+          }
         },
         "harvestPlan": {
-          "type": "string",
-          "description": "Plan for harvesting tomatoes, including dates and quantities."
+          "type": "array",
+          "description": "Plan for harvesting tomatoes, including dates and quantities.",
+           "items": {
+            "type": "object",
+            "properties": {
+              "date": { "type": "string" },
+              "kg": { "type": "number" }
+            }
+          }
         },
         "createdAt": {
           "type": "string",
@@ -87,30 +107,16 @@
         }
       },
       "required": [
-        "id",
         "uid",
         "imageUrl",
-        "detections",
-        "stageCounts",
-        "growthStage",
-        "modelVersion",
-        "yieldNowKg",
-        "sellableKg",
-        "readyCurve",
-        "harvestPlan",
         "createdAt"
       ]
     },
     "Feedback": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Feedback",
       "type": "object",
       "description": "Represents farmer feedback on plant data, including corrections and notes.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the feedback entry."
-        },
         "plantId": {
           "type": "string",
           "description": "Reference to Plant. (Relationship: Plant 1:N Feedback)"
@@ -132,7 +138,10 @@
           "description": "Additional notes from the farmer."
         },
         "boxLabels": {
-          "type": "string",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "description": "Box label array from the farmer."
         },
         "imageUrl": {
@@ -141,21 +150,15 @@
         }
       },
       "required": [
-        "id",
         "plantId",
         "uid"
       ]
     },
     "MarketPrice": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "MarketPrice",
       "type": "object",
       "description": "Represents market prices for tomatoes in a specific district and date.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the market price record (combination of district and date)."
-        },
         "district": {
           "type": "string",
           "description": "District for which the market price is recorded."
@@ -171,22 +174,16 @@
         }
       },
       "required": [
-        "id",
         "district",
         "date",
         "price"
       ]
     },
     "DailyMetrics": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "DailyMetrics",
       "type": "object",
       "description": "Represents daily key performance indicators (KPIs) for the tomato yield prediction system.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the daily metrics record (date)."
-        },
         "date": {
           "type": "string",
           "description": "Date for which the metrics are recorded.",
@@ -210,7 +207,6 @@
         }
       },
       "required": [
-        "id",
         "date",
         "mAP50_95",
         "avgConf",
@@ -226,92 +222,35 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{uid}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profiles and farm metadata. Each document is uniquely identified by the user's UID.",
-          "params": [
-            {
-              "name": "uid",
-              "description": "The unique identifier of the user."
-            }
-          ]
-        }
+    "/users/{uid}": {
+      "schema": {
+        "$ref": "#/entities/User"
       },
-      {
-        "path": "/plants/{plantId}",
-        "definition": {
-          "entityName": "Plant",
-          "schema": {
-            "$ref": "#/backend/entities/Plant"
-          },
-          "description": "Stores per-image inference data for each plant. Includes denormalized 'uid' field for authorization independence.",
-          "params": [
-            {
-              "name": "plantId",
-              "description": "The unique identifier of the plant observation."
-            }
-          ]
-        }
+      "description": "Stores user profiles and farm metadata. Each document is uniquely identified by the user's UID."
+    },
+    "/plants/{plantId}": {
+      "schema": {
+        "$ref": "#/entities/Plant"
       },
-      {
-        "path": "/feedback/{feedbackId}",
-        "definition": {
-          "entityName": "Feedback",
-          "schema": {
-            "$ref": "#/backend/entities/Feedback"
-          },
-          "description": "Stores farmer feedback on plant data. Includes denormalized 'uid' field for authorization independence.",
-          "params": [
-            {
-              "name": "feedbackId",
-              "description": "The unique identifier for the feedback entry."
-            }
-          ]
-        }
+      "description": "Stores per-image inference data for each plant. Includes denormalized 'uid' field for authorization independence."
+    },
+    "/feedback/{feedbackId}": {
+      "schema": {
+        "$ref": "#/entities/Feedback"
       },
-      {
-        "path": "/market/{district}/{date}",
-        "definition": {
-          "entityName": "MarketPrice",
-          "schema": {
-            "$ref": "#/backend/entities/MarketPrice"
-          },
-          "description": "Stores cached market prices for tomatoes by district and date.",
-          "params": [
-            {
-              "name": "district",
-              "description": "The district for which the market price is recorded."
-            },
-            {
-              "name": "date",
-              "description": "The date for which the market price is recorded (YYYY-MM-DD)."
-            }
-          ]
-        }
+      "description": "Stores farmer feedback on plant data. Includes denormalized 'uid' field for authorization independence."
+    },
+    "/market/{district}/{date}": {
+      "schema": {
+        "$ref": "#/entities/MarketPrice"
       },
-      {
-        "path": "/metrics/{yyyymmdd}",
-        "definition": {
-          "entityName": "DailyMetrics",
-          "schema": {
-            "$ref": "#/backend/entities/DailyMetrics"
-          },
-          "description": "Stores daily KPIs for the tomato yield prediction system. Data only written via Cloud Functions.",
-          "params": [
-            {
-              "name": "yyyymmdd",
-              "description": "The date for which the metrics are recorded (YYYYMMDD)."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore data structure is designed to support the AgriFarm AI application, focusing on scalability, security, and ease of querying. It incorporates denormalization for authorization independence and structural segregation for streamlined security rules. Path-based ownership is used for user-specific data, while collaborative scenarios leverage membership maps where applicable.\n\nAuthorization Independence is achieved by denormalizing the 'uid' (user ID) into the `/plants/{plantId}` and `/feedback/{feedbackId}` collections. This eliminates the need for security rules to perform `get()` operations on the `/users/{uid}` document to verify ownership, enabling atomic operations and simplifying security rule evaluation. Since `plants` and `feedback` documents are exclusively owned by a single user, a membership map is not necessary.\n\nStructural Segregation is applied by storing user profiles in `/users/{uid}`, plant data in `/plants/{plantId}`, farmer feedback in `/feedback/{feedbackId}`, market prices in `/market/{district}/{date}`, and daily metrics in `/metrics/{yyyymmdd}`. This segregation ensures that each collection has a homogeneous security posture, simplifying security rules and preventing unintended access. Because metrics need to be restricted to admin level functions only, Cloud Functions are used to prevent direct access. The market prices are readable by all and only writable by admin via Cloud Functions, which will allow for QAPs and remove the risk of users spoofing market data.\n\nQAPs (Rules are not Filters) is supported by structural segregation, enabling efficient list operations. For example, listing all plants belonging to a user involves querying the `/plants` collection with a `where('uid', '==', request.auth.uid)` clause. This avoids the need to filter out unauthorized documents within the rules, thus optimizing query performance and securing data access."
+      "description": "Stores cached market prices for tomatoes by district and date."
+    },
+    "/metrics/{yyyymmdd}": {
+      "schema": {
+        "$ref": "#/entities/DailyMetrics"
+      },
+      "description": "Stores daily KPIs for the tomato yield prediction system. Data only written via Cloud Functions."
+    }
   }
 }
