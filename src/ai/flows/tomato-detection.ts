@@ -9,11 +9,11 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { TomatoDetectionInputSchema, TomatoDetectionOutputSchema, type TomatoDetectionOutput as TomatoDetectionOutputType } from '@/lib/types';
-import type { TomatoDetectionInput } from '@/lib/types';
+import { TomatoDetectionInputSchema, TomatoDetectionOutputSchema } from '@/lib/types';
+import type { TomatoDetectionInput, TomatoDetectionOutput } from '@/lib/types';
 
 
-export async function runDetectionModel(input: TomatoDetectionInput): Promise<TomatoDetectionOutputType> {
+export async function runDetectionModel(input: TomatoDetectionInput): Promise<TomatoDetectionOutput> {
   const result = await tomatoDetectionFlow(input);
 
   // The model may not return all fields, so we calculate derived values here for consistency.
@@ -39,6 +39,7 @@ export async function runDetectionModel(input: TomatoDetectionInput): Promise<To
   
   // Use model confidence if provided, otherwise generate a high-confidence placeholder.
   const confidence = result.confidence ?? (0.92 + Math.random() * 0.07);
+  const imageUrl = input.photoDataUri;
 
   return {
       ...result,
@@ -47,6 +48,7 @@ export async function runDetectionModel(input: TomatoDetectionInput): Promise<To
       growthStage,
       avgBboxArea,
       confidence,
+      imageUrl,
   };
 }
 
@@ -54,7 +56,7 @@ const prompt = ai.definePrompt({
     name: 'tomatoDetectionPrompt',
     input: { schema: TomatoDetectionInputSchema },
     output: { schema: TomatoDetectionOutputSchema },
-    prompt: `You are a specialized agricultural AI model trained to detect tomatoes in an image and classify their ripeness.
+    prompt: `You are a specialized agricultural AI model trained to detect tomatoes in an image and classify their ripeness, similar to YOLOv8.
   
 Your task is to analyze the provided image and identify all tomatoes. For each detected tomato, provide its bounding box and classify its ripeness stage.
   

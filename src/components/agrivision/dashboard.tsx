@@ -17,6 +17,7 @@ import { mockTomatoDetection, calculateYieldForecast } from '@/lib/mock-data';
 import type { MarketPriceForecastingOutput } from '@/ai/flows/market-price-forecasting';
 import { useToast } from '@/hooks/use-toast';
 import { dataURLtoFile } from '@/lib/utils';
+import { runDetectionModel } from '@/app/actions';
 
 
 export function Dashboard() {
@@ -37,7 +38,7 @@ export function Dashboard() {
     forecastDays: 14,
     gddBaseC: 10,
     harvestCapacityKgDay: 20,
-    useDetectionModel: false, // Defaulting to false as model is removed
+    useDetectionModel: true,
     useLiveWeather: false,
     includePriceForecast: true,
     district: "Coimbatore",
@@ -65,18 +66,33 @@ export function Dashboard() {
     setIsLoading(true);
 
     try {
-        // Fallback to mock data since AI model is removed
-        const detection = mockTomatoDetection(image.url);
-        setDetectionResult(detection);
+      let detection: DetectionResult | null = null;
+      if (controls.useDetectionModel) {
+        const response = await runDetectionModel({ photoDataUri: image.url });
+        if (response.success && response.data) {
+          detection = response.data;
+        } else {
+          toast({ variant: 'destructive', title: 'Detection Failed', description: response.error });
+          setIsLoading(false);
+          return;
+        }
+      } else {
+        // Fallback to mock data if model is not used
+        detection = mockTomatoDetection(image.url);
+      }
+      
+      setDetectionResult(detection);
+      if (detection) {
         const forecast = calculateYieldForecast(detection, controls);
         setForecastResult(forecast);
-        setTimeout(() => setIsLoading(false), 500); // Simulate processing time
+      }
     } catch (error) {
         console.error("Analysis failed:", error);
         toast({ variant: 'destructive', title: 'Analysis Failed', description: 'An unexpected error occurred.' });
+    } finally {
         setIsLoading(false);
     }
-  }, [image, controls, toast]);
+  }, [image.url, controls, toast]);
   
   React.useEffect(() => {
     // Recalculate forecast whenever controls change AND a detection result exists
