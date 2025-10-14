@@ -13,6 +13,7 @@ import {
   analyzeTomato,
   type AnalyzeTomatoInput,
 } from '@/ai/flows/tomato-analysis';
+import { runYieldForecasting, type YieldForecastingInput } from '@/ai/flows/yield-forecasting';
 
 export async function runMarketPriceForecasting(
   input: MarketPriceForecastingInput
@@ -52,4 +53,14 @@ export async function runTomatoAnalysis(input: AnalyzeTomatoInput) {
     }
     return { success: false, error: errorMessage };
   }
+}
+
+export async function runAIForecast(input: YieldForecastingInput) {
+    try {
+        const result = await runYieldForecasting(input);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Error in yield forecasting flow:', error);
+        return { success: false, error: 'Failed to run AI-powered forecast.' };
+    }
 }

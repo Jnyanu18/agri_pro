@@ -16,7 +16,7 @@ import { ChatTab } from '@/components/agrivision/chat-tab';
 import { calculateYieldForecast, mockTomatoDetection } from '@/lib/mock-data';
 import type { MarketPriceForecastingOutput } from '@/ai/flows/market-price-forecasting';
 import { useToast } from '@/hooks/use-toast';
-import { runTomatoAnalysis } from '@/app/actions';
+import { runTomatoAnalysis, runAIForecast } from '@/app/actions';
 import { dataURLtoFile } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -70,63 +70,64 @@ export function Dashboard() {
     setForecastResult(null);
 
     try {
+      // Step 1: Always run detection
       let analysisResult: DetectionResult;
+      
+      const reader = new FileReader();
+      reader.readAsDataURL(image.file || await dataURLtoFile(image.url, 'analysis-image.jpg', image.contentType ?? 'image/jpeg'));
+      
+      analysisResult = await new Promise<DetectionResult>((resolve, reject) => {
+        reader.onload = async () => {
+          try {
+            const photoDataUri = reader.result as string;
+            const response = await runTomatoAnalysis({ photoDataUri, contentType: image.contentType! });
 
-      if (controls.useDetectionModel && image.contentType) {
-        const reader = new FileReader();
-        reader.readAsDataURL(image.file || await dataURLtoFile(image.url, 'analysis-image.jpg', image.contentType));
-        
-        await new Promise<void>((resolve, reject) => {
-          reader.onload = async () => {
-            try {
-              const photoDataUri = reader.result as string;
-              const response = await runTomatoAnalysis({ photoDataUri, contentType: image.contentType! });
-
-              if (!response.success || !response.data) {
-                let errorMessage = 'An unknown error occurred during analysis.';
-                if (response.error) {
-                    if (response.error.includes('API key not valid')) {
-                        errorMessage = 'Your Gemini API key is not valid. Please check your .env file.';
-                    } else {
-                        errorMessage = response.error;
-                    }
-                }
+            if (!response.success || !response.data) {
+                let errorMessage = response.error || 'An unknown error occurred during analysis.';
                 throw new Error(errorMessage);
-              }
-
-              const analysis: TomatoAnalysisResult = response.data;
-              
-              const newDetectionResult: DetectionResult = {
-                plantId: Date.now(),
-                detections: analysis.counts.immature + analysis.counts.ripening + analysis.counts.mature,
-                boxes: [], 
-                stageCounts: analysis.counts,
-                growthStage: analysis.counts.mature > analysis.counts.immature ? 'Mature' : 'Ripening',
-                avgBboxArea: 0, 
-                confidence: 0.9, 
-                imageUrl: image.url!,
-                summary: analysis.summary
-              };
-              analysisResult = newDetectionResult;
-              resolve();
-            } catch (error) {
-              reject(error);
             }
-          };
-          reader.onerror = (error) => {
-            reject(new Error("Failed to read image file."));
-          }
-        });
 
-      } else {
-        // Use mock data if the switch is off
-        analysisResult = mockTomatoDetection(image.url);
-      }
+            const analysis: TomatoAnalysisResult = response.data;
+            
+            resolve({
+              plantId: Date.now(),
+              detections: analysis.counts.immature + analysis.counts.ripening + analysis.counts.mature,
+              boxes: [], 
+              stageCounts: analysis.counts,
+              growthStage: analysis.counts.mature > analysis.counts.immature ? 'Mature' : 'Ripening',
+              avgBboxArea: 0, 
+              confidence: 0.9, 
+              imageUrl: image.url!,
+              summary: analysis.summary
+            });
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = (error) => {
+          reject(new Error("Failed to read image file."));
+        }
+      });
       
       setDetectionResult(analysisResult);
-      
+
+      // Step 2: Run forecast based on detection results
       if (analysisResult) {
-          const forecast = calculateYieldForecast(analysisResult, controls);
+          let forecast: ForecastResult;
+          if (controls.useLiveWeather) {
+              // Use the new AI-powered forecasting flow
+              const forecastResponse = await runAIForecast({
+                  stageCounts: analysisResult.stageCounts,
+                  controls: controls
+              });
+              if (!forecastResponse.success || !forecastResponse.data) {
+                  throw new Error(forecastResponse.error || "AI forecast failed.");
+              }
+              forecast = forecastResponse.data;
+          } else {
+              // Use the old client-side calculation as a fallback
+              forecast = calculateYieldForecast(analysisResult, controls);
+          }
           setForecastResult(forecast);
           setActiveTab('forecast');
       }
@@ -141,10 +142,11 @@ export function Dashboard() {
   
   React.useEffect(() => {
     // Recalculate forecast whenever controls change AND a detection result exists
-    if(detectionResult) {
+    if(detectionResult && !controls.useLiveWeather) {
       const forecast = calculateYieldForecast(detectionResult, controls);
       setForecastResult(forecast);
     }
+    // If useLiveWeather is on, re-running the full analysis is required, so we don't auto-recalculate here.
   }, [controls, detectionResult]);
 
   const appState = useMemo(() => ({
