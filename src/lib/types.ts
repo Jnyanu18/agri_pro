@@ -56,11 +56,18 @@ export const HarvestTaskSchema = z.object({
 });
 export type HarvestTask = z.infer<typeof HarvestTaskSchema>;
 
+export const HarvestWindowSchema = z.object({
+    start: z.string().describe("The start date of the optimal harvest window."),
+    end: z.string().describe("The end date of the optimal harvest window."),
+});
+export type HarvestWindow = z.infer<typeof HarvestWindowSchema>;
+
 export const ForecastResultSchema = z.object({
     yield_now_kg: z.number(),
     sellable_kg: z.number(),
     daily: z.array(DailyForecastSchema),
     harvest_plan: z.array(HarvestTaskSchema),
+    harvestWindow: HarvestWindowSchema.optional(),
     notes: z.array(z.string()),
 });
 export type ForecastResult = z.infer<typeof ForecastResultSchema>;

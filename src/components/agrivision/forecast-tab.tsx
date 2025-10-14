@@ -1,13 +1,15 @@
+
 "use client";
 
 import type { ForecastResult } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart as BarChartIcon, BarChart3, PackageCheck, Shovel, Trees } from 'lucide-react';
+import { BarChart as BarChartIcon, CalendarDays, PackageCheck, Shovel, Trees } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Skeleton } from '../ui/skeleton';
 import { formatNumber } from '@/lib/utils';
+import { format } from 'date-fns';
 
 interface ForecastTabProps {
   result: ForecastResult | null;
@@ -29,7 +31,7 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
     );
   }
 
-  const { yield_now_kg, sellable_kg, daily, harvest_plan, notes } = result;
+  const { yield_now_kg, sellable_kg, daily, harvest_plan, harvestWindow, notes } = result;
 
   const chartConfig = {
     ready_kg: {
@@ -38,9 +40,11 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
     },
   };
 
+  const totalHarvest = harvest_plan.reduce((a, b) => a + b.harvest_kg, 0);
+
   return (
     <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="font-headline text-base">Current Yield</CardTitle>
@@ -48,7 +52,7 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{formatNumber(yield_now_kg)} kg</div>
-            <p className="text-xs text-muted-foreground">Estimated total yield from mature fruit</p>
+            <p className="text-xs text-muted-foreground">Est. from mature fruit</p>
           </CardContent>
         </Card>
         <Card>
@@ -58,8 +62,29 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{formatNumber(sellable_kg)} kg</div>
-            <p className="text-xs text-muted-foreground">After estimated post-harvest loss</p>
+            <p className="text-xs text-muted-foreground">After post-harvest loss</p>
           </CardContent>
+        </Card>
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="font-headline text-base">Harvest Window</CardTitle>
+                <CalendarDays className="h-5 w-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                {harvestWindow ? (
+                <>
+                    <div className="text-xl font-bold">
+                        {format(new Date(harvestWindow.start), 'MMM d')} - {format(new Date(harvestWindow.end), 'MMM d')}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Optimal harvest period</p>
+                </>
+                ) : (
+                <>
+                    <div className="text-xl font-bold">-</div>
+                    <p className="text-xs text-muted-foreground">No harvest scheduled</p>
+                </>
+                )}
+            </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -67,8 +92,8 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
             <Shovel className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatNumber(harvest_plan.reduce((a, b) => a + b.harvest_kg, 0))} kg</div>
-            <p className="text-xs text-muted-foreground">Total harvest in forecast period</p>
+            <div className="text-3xl font-bold">{formatNumber(totalHarvest)} kg</div>
+            <p className="text-xs text-muted-foreground">Total harvest in period</p>
           </CardContent>
         </Card>
       </div>
@@ -128,8 +153,8 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
 function ForecastSkeleton() {
   return (
     <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-        {[...Array(3)].map((_, i) => (
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+        {[...Array(4)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="pb-2">
               <Skeleton className="h-5 w-2/4" />

@@ -97,11 +97,16 @@ const yieldForecastingFlow = ai.defineFlow(
         lastHarvestedKg = day.ready_kg;
     }
     
+    const harvestWindow = harvest_plan.length > 0
+        ? { start: harvest_plan[0].date, end: harvest_plan[harvest_plan.length - 1].date }
+        : undefined;
+    
     const result: ForecastResult = {
         yield_now_kg,
         sellable_kg,
         daily,
         harvest_plan,
+        harvestWindow,
         notes: [
             `Forecast is based on a weather prediction for ${controls.district}.`,
             `Harvest plan is optimized for a capacity of ${harvestCapacityKgDay} kg/day.`,
