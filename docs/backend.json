@@ -1,0 +1,317 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user profile with associated farm metadata.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "numPlants": {
+          "type": "number",
+          "description": "Number of plants in the user's farm."
+        },
+        "district": {
+          "type": "string",
+          "description": "District where the user's farm is located."
+        },
+        "language": {
+          "type": "string",
+          "description": "Preferred language of the user."
+        }
+      },
+      "required": [
+        "id"
+      ]
+    },
+    "Plant": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Plant",
+      "type": "object",
+      "description": "Represents per-image inference data for a plant, including detections, stage counts, and yield estimations.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the plant observation."
+        },
+        "uid": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Plant)"
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the image associated with the plant."
+        },
+        "detections": {
+          "type": "array",
+          "description": "Array of tomato detections in the image.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "stageCounts": {
+          "type": "string",
+          "description": "Counts of tomatoes in different growth stages (immature, ripening, mature)."
+        },
+        "growthStage": {
+          "type": "string",
+          "description": "Overall growth stage of the plant."
+        },
+        "modelVersion": {
+          "type": "string",
+          "description": "Version of the model used for inference."
+        },
+        "yieldNowKg": {
+          "type": "number",
+          "description": "Estimated current yield in kilograms."
+        },
+        "sellableKg": {
+          "type": "number",
+          "description": "Estimated sellable yield in kilograms."
+        },
+        "readyCurve": {
+          "type": "string",
+          "description": "Curve representing the readiness of tomatoes for harvest over time."
+        },
+        "harvestPlan": {
+          "type": "string",
+          "description": "Plan for harvesting tomatoes, including dates and quantities."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the plant data was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "uid",
+        "imageUrl",
+        "detections",
+        "stageCounts",
+        "growthStage",
+        "modelVersion",
+        "yieldNowKg",
+        "sellableKg",
+        "readyCurve",
+        "harvestPlan",
+        "createdAt"
+      ]
+    },
+    "Feedback": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Feedback",
+      "type": "object",
+      "description": "Represents farmer feedback on plant data, including corrections and notes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the feedback entry."
+        },
+        "plantId": {
+          "type": "string",
+          "description": "Reference to Plant. (Relationship: Plant 1:N Feedback)"
+        },
+        "uid": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Feedback)"
+        },
+        "missedCount": {
+          "type": "number",
+          "description": "Number of tomatoes missed by the detection model."
+        },
+        "wrongStage": {
+          "type": "string",
+          "description": "Indication of incorrect growth stage classification."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes from the farmer."
+        },
+        "boxLabels": {
+          "type": "string",
+          "description": "Box label array from the farmer."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "URL of the image associated with the feedback."
+        }
+      },
+      "required": [
+        "id",
+        "plantId",
+        "uid"
+      ]
+    },
+    "MarketPrice": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MarketPrice",
+      "type": "object",
+      "description": "Represents market prices for tomatoes in a specific district and date.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the market price record (combination of district and date)."
+        },
+        "district": {
+          "type": "string",
+          "description": "District for which the market price is recorded."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date for which the market price is recorded.",
+          "format": "date-time"
+        },
+        "price": {
+          "type": "number",
+          "description": "Market price of tomatoes."
+        }
+      },
+      "required": [
+        "id",
+        "district",
+        "date",
+        "price"
+      ]
+    },
+    "DailyMetrics": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DailyMetrics",
+      "type": "object",
+      "description": "Represents daily key performance indicators (KPIs) for the tomato yield prediction system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the daily metrics record (date)."
+        },
+        "date": {
+          "type": "string",
+          "description": "Date for which the metrics are recorded.",
+          "format": "date-time"
+        },
+        "mAP50_95": {
+          "type": "number",
+          "description": "Mean average precision at IoU thresholds between 0.50 and 0.95."
+        },
+        "avgConf": {
+          "type": "number",
+          "description": "Average confidence score of the detection model."
+        },
+        "yieldMAE": {
+          "type": "number",
+          "description": "Mean absolute error in yield estimation."
+        },
+        "imagesProcessed": {
+          "type": "number",
+          "description": "Number of images processed by the system."
+        }
+      },
+      "required": [
+        "id",
+        "date",
+        "mAP50_95",
+        "avgConf",
+        "yieldMAE",
+        "imagesProcessed"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{uid}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles and farm metadata. Each document is uniquely identified by the user's UID.",
+          "params": [
+            {
+              "name": "uid",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/plants/{plantId}",
+        "definition": {
+          "entityName": "Plant",
+          "schema": {
+            "$ref": "#/backend/entities/Plant"
+          },
+          "description": "Stores per-image inference data for each plant. Includes denormalized 'uid' field for authorization independence.",
+          "params": [
+            {
+              "name": "plantId",
+              "description": "The unique identifier of the plant observation."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/feedback/{feedbackId}",
+        "definition": {
+          "entityName": "Feedback",
+          "schema": {
+            "$ref": "#/backend/entities/Feedback"
+          },
+          "description": "Stores farmer feedback on plant data. Includes denormalized 'uid' field for authorization independence.",
+          "params": [
+            {
+              "name": "feedbackId",
+              "description": "The unique identifier for the feedback entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/market/{district}/{date}",
+        "definition": {
+          "entityName": "MarketPrice",
+          "schema": {
+            "$ref": "#/backend/entities/MarketPrice"
+          },
+          "description": "Stores cached market prices for tomatoes by district and date.",
+          "params": [
+            {
+              "name": "district",
+              "description": "The district for which the market price is recorded."
+            },
+            {
+              "name": "date",
+              "description": "The date for which the market price is recorded (YYYY-MM-DD)."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/metrics/{yyyymmdd}",
+        "definition": {
+          "entityName": "DailyMetrics",
+          "schema": {
+            "$ref": "#/backend/entities/DailyMetrics"
+          },
+          "description": "Stores daily KPIs for the tomato yield prediction system. Data only written via Cloud Functions.",
+          "params": [
+            {
+              "name": "yyyymmdd",
+              "description": "The date for which the metrics are recorded (YYYYMMDD)."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the AgriFarm AI application, focusing on scalability, security, and ease of querying. It incorporates denormalization for authorization independence and structural segregation for streamlined security rules. Path-based ownership is used for user-specific data, while collaborative scenarios leverage membership maps where applicable.\n\nAuthorization Independence is achieved by denormalizing the 'uid' (user ID) into the `/plants/{plantId}` and `/feedback/{feedbackId}` collections. This eliminates the need for security rules to perform `get()` operations on the `/users/{uid}` document to verify ownership, enabling atomic operations and simplifying security rule evaluation. Since `plants` and `feedback` documents are exclusively owned by a single user, a membership map is not necessary.\n\nStructural Segregation is applied by storing user profiles in `/users/{uid}`, plant data in `/plants/{plantId}`, farmer feedback in `/feedback/{feedbackId}`, market prices in `/market/{district}/{date}`, and daily metrics in `/metrics/{yyyymmdd}`. This segregation ensures that each collection has a homogeneous security posture, simplifying security rules and preventing unintended access. Because metrics need to be restricted to admin level functions only, Cloud Functions are used to prevent direct access. The market prices are readable by all and only writable by admin via Cloud Functions, which will allow for QAPs and remove the risk of users spoofing market data.\n\nQAPs (Rules are not Filters) is supported by structural segregation, enabling efficient list operations. For example, listing all plants belonging to a user involves querying the `/plants` collection with a `where('uid', '==', request.auth.uid)` clause. This avoids the need to filter out unauthorized documents within the rules, thus optimizing query performance and securing data access."
+  }
+}
