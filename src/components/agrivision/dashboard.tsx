@@ -4,7 +4,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Camera, LineChart, MessageCircle, BarChart as BarChartIcon } from 'lucide-react';
-import type { AppControls, DetectionResult, ForecastResult, ChatMessage, TomatoAnalysisResult, StageCounts, WeatherData } from '@/lib/types';
+import type { AppControls, DetectionResult, ForecastResult, ChatMessage, PlantAnalysisResult, StageCounts, WeatherData } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarInset } from '@/components/ui/sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,7 +17,7 @@ import { ChatTab } from '@/components/agrivision/chat-tab';
 import { calculateYieldForecast as calculateMockYieldForecast } from '@/lib/mock-data';
 import type { MarketPriceForecastingOutput } from '@/ai/flows/market-price-forecasting';
 import { useToast } from '@/hooks/use-toast';
-import { runTomatoAnalysis, runAIForecast } from '@/app/actions';
+import { runPlantAnalysis, runAIForecast } from '@/app/actions';
 import { dataURLtoFile } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ReportPage } from './report-page';
@@ -32,8 +32,8 @@ const calculateYieldForecastWithWeather = (
 ): ForecastResult => {
     const { avgWeightG, postHarvestLossPct, numPlants, forecastDays, gddBaseC, harvestCapacityKgDay } = controls;
 
-    const totalDetections = stageCounts.immature + stageCounts.ripening + stageCounts.mature + (stageCounts.breaker || 0) + (stageCounts.pink || 0);
-    const yield_now_kg_per_plant = (stageCounts.mature * avgWeightG) / 1000;
+    const totalDetections = (stageCounts.immature || 0) + (stageCounts.ripening || 0) + (stageCounts.mature || 0) + (stageCounts.breaker || 0) + (stageCounts.pink || 0);
+    const yield_now_kg_per_plant = ((stageCounts.mature || 0) * avgWeightG) / 1000;
     const yield_now_kg = yield_now_kg_per_plant * numPlants;
     const sellable_kg = yield_now_kg * (1 - postHarvestLossPct / 100);
 
@@ -43,9 +43,9 @@ const calculateYieldForecastWithWeather = (
     const pinkGDD = 40;
     const maturingGDD = 55;
     
-    let immatureCount = stageCounts.immature;
+    let immatureCount = stageCounts.immature || 0;
     let breakerCount = stageCounts.breaker || 0;
-    let ripeningCount = stageCounts.ripening;
+    let ripeningCount = stageCounts.ripening || 0;
     let pinkCount = stageCounts.pink || 0;
     
     let cumGDD = 0;
@@ -170,7 +170,7 @@ export function Dashboard() {
         reader.onload = async () => {
           try {
             const photoDataUri = reader.result as string;
-            const response = await runTomatoAnalysis({ photoDataUri, contentType: image.contentType! });
+            const response = await runPlantAnalysis({ photoDataUri, contentType: image.contentType! });
 
             if (!response.success || !response.data) {
                 let errorMessage = response.error || 'An unknown error occurred during analysis.';
@@ -180,16 +180,24 @@ export function Dashboard() {
                 throw new Error(errorMessage);
             }
 
-            const analysis: TomatoAnalysisResult = response.data;
+            const analysis: PlantAnalysisResult = response.data;
             
-            const totalDetections = Object.values(analysis.counts).reduce((sum, count) => sum + count, 0) - analysis.counts.flower;
+            const totalDetections = analysis.stages.reduce((sum, stage) => sum + (stage.stage.toLowerCase() !== 'flower' ? stage.count : 0), 0);
+            
+            // Convert array of stages to StageCounts object
+            const stageCounts = analysis.stages.reduce((acc, s) => {
+                acc[s.stage.toLowerCase() as keyof StageCounts] = s.count;
+                return acc;
+            }, {} as StageCounts);
 
             resolve({
               plantId: Date.now(),
+              plantType: analysis.plantType,
               detections: totalDetections,
               boxes: [], 
-              stageCounts: analysis.counts,
-              growthStage: analysis.counts.mature > analysis.counts.immature ? 'Mature' : 'Ripening',
+              stageCounts: stageCounts,
+              stages: analysis.stages,
+              growthStage: 'Ripening', // This needs to be determined more dynamically
               avgBboxArea: 0, 
               confidence: 0.9, 
               imageUrl: image.url!,
@@ -312,5 +320,3 @@ export function Dashboard() {
     </div>
   );
 }
-
-    

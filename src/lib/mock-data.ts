@@ -5,34 +5,32 @@ import type { AppControls, DetectionBox, DetectionResult, ForecastResult, Stage,
 // Mocks the output of a tomato detection model.
 export function mockTomatoDetection(imageUrl: string): DetectionResult {
   const detections = Math.floor(Math.random() * 25) + 10; // 10 to 34 detections
-  const stages: Stage[] = ['immature', 'ripening', 'mature', 'flower', 'breaker', 'pink'];
-  const stageCounts: StageCounts = { immature: 0, ripening: 0, mature: 0, flower: 0, breaker: 0, pink: 0 };
+  const stages: { stage: string, count: number }[] = [
+      { stage: 'flower', count: Math.floor(Math.random() * 5) },
+      { stage: 'immature', count: Math.floor(Math.random() * 10) },
+      { stage: 'breaker', count: Math.floor(Math.random() * 5) },
+      { stage: 'ripening', count: Math.floor(Math.random() * 5) },
+      { stage: 'pink', count: Math.floor(Math.random() * 5) },
+      { stage: 'mature', count: Math.floor(Math.random() * 5) },
+  ];
+  
+  const stageCounts: StageCounts = stages.reduce((acc, s) => {
+    acc[s.stage as keyof StageCounts] = s.count;
+    return acc;
+    }, {} as StageCounts);
+
   const boxes: DetectionBox[] = [];
 
-  for (let i = 0; i < detections; i++) {
-    const stage = stages[Math.floor(Math.random() * stages.length)];
-    stageCounts[stage]++;
-
-    if (stage === 'flower') continue; // Flowers don't have boxes in this mock
-
-    const x1 = Math.random() * 0.8;
-    const y1 = Math.random() * 0.8;
-    const boxWidth = 0.05 + Math.random() * 0.1;
-    const boxHeight = 0.05 + Math.random() * 0.1;
-    boxes.push({
-      box: [x1, y1, x1 + boxWidth, y1 + boxHeight],
-      stage,
-    });
-  }
-
-  const growthStage = stageCounts.mature > detections / 2 ? 'Mature' : stageCounts.ripening > detections / 3 ? 'Ripening' : 'Immature';
-  const avgBboxArea = boxes.reduce((acc, { box }) => acc + (box[2] - box[0]) * (box[3] - box[1]), 0) / boxes.length;
+  const growthStage = (stageCounts.mature || 0) > detections / 2 ? 'Mature' : (stageCounts.ripening || 0) > detections / 3 ? 'Ripening' : 'Immature';
+  const avgBboxArea = 0;
 
   return {
     plantId: 1,
+    plantType: "Tomato",
     detections,
     boxes,
     stageCounts,
+    stages,
     growthStage,
     avgBboxArea,
     confidence: 0.85 + Math.random() * 0.1,
@@ -48,8 +46,8 @@ export function calculateYieldForecast(
   const { stageCounts } = detectionResult;
   const { avgWeightG, postHarvestLossPct, numPlants, forecastDays, gddBaseC, harvestCapacityKgDay } = controls;
 
-  const totalDetections = stageCounts.immature + stageCounts.ripening + stageCounts.mature + (stageCounts.breaker || 0) + (stageCounts.pink || 0);
-  const yield_now_kg_per_plant = (stageCounts.mature * avgWeightG) / 1000;
+  const totalDetections = (stageCounts.immature || 0) + (stageCounts.ripening || 0) + (stageCounts.mature || 0) + (stageCounts.breaker || 0) + (stageCounts.pink || 0);
+  const yield_now_kg_per_plant = ((stageCounts.mature || 0) * avgWeightG) / 1000;
   const yield_now_kg = yield_now_kg_per_plant * numPlants;
   const sellable_kg = yield_now_kg * (1 - postHarvestLossPct / 100);
 
@@ -60,9 +58,9 @@ export function calculateYieldForecast(
   const pinkGDD = 40;
   const maturingGDD = 55;
   
-  let immatureCount = stageCounts.immature;
+  let immatureCount = stageCounts.immature || 0;
   let breakerCount = stageCounts.breaker || 0;
-  let ripeningCount = stageCounts.ripening;
+  let ripeningCount = stageCounts.ripening || 0;
   let pinkCount = stageCounts.pink || 0;
   
   let cumGDD = 0;

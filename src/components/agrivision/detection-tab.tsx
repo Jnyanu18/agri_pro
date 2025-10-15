@@ -8,6 +8,7 @@ import { ImageWithBoxes } from "./image-with-boxes";
 import { UploadCloud } from "lucide-react";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface DetectionTabProps {
   result: DetectionResult | null;
@@ -15,14 +16,20 @@ interface DetectionTabProps {
   imageUrl: string | null;
 }
 
-const stageBG: Record<Stage, string> = {
+const stageColors: { [key: string]: string } = {
   flower: "bg-pink-400",
   immature: "bg-green-500",
   breaker: "bg-lime-400",
   ripening: "bg-amber-500",
   pink: "bg-rose-400",
   mature: "bg-red-500",
+  fruitlet: "bg-yellow-300",
+  default: "bg-gray-400",
 };
+
+const getStageColor = (stage: string) => {
+  return stageColors[stage.toLowerCase()] || stageColors.default;
+}
 
 export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps) {
   const { t } = useTranslation();
@@ -64,22 +71,23 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
     );
   }
 
-  const { detections, stageCounts, boxes, summary } = result;
+  const { detections, stages, boxes, summary, plantType } = result;
 
-  const totalFruits = stageCounts.immature + stageCounts.ripening + stageCounts.mature + (stageCounts.breaker || 0) + (stageCounts.pink || 0);
-  const maturityDistribution = totalFruits > 0 ? [
-    { stage: "immature", value: (stageCounts.immature / totalFruits) * 100, color: "bg-green-500" },
-    { stage: "breaker", value: ((stageCounts.breaker || 0) / totalFruits) * 100, color: "bg-lime-400" },
-    { stage: "ripening", value: (stageCounts.ripening / totalFruits) * 100, color: "bg-amber-500" },
-    { stage: "pink", value: ((stageCounts.pink || 0) / totalFruits) * 100, color: "bg-rose-400" },
-    { stage: "mature", value: (stageCounts.mature / totalFruits) * 100, color: "bg-red-500" },
-  ] : [];
+  const totalFruits = stages.reduce((sum, s) => sum + (s.stage.toLowerCase() !== 'flower' ? s.count : 0), 0);
+  
+  const maturityDistribution = totalFruits > 0 ? stages
+    .filter(s => s.stage.toLowerCase() !== 'flower')
+    .map(s => ({
+        stage: s.stage,
+        value: (s.count / totalFruits) * 100,
+        color: getStageColor(s.stage)
+    })) : [];
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle className="font-headline">{t('detection_result')}</CardTitle>
+          <CardTitle className="font-headline">{t('detection_result_for', { plant: plantType })}</CardTitle>
           <CardDescription>
             {summary || t('analyzed_image_summary', { count: detections })}
           </CardDescription>
@@ -103,11 +111,11 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
                 </div>
             )}
             <div className="space-y-2 text-sm">
-              {Object.entries(stageCounts).map(([stage, count]) => (
+              {stages.map(({ stage, count }) => (
                 <div key={stage} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className={`h-2 w-2 rounded-full ${stageBG[stage as Stage]}`} />
-                    <span className="capitalize">{t(stage as Stage)}</span>
+                    <span className={cn("h-2 w-2 rounded-full", getStageColor(stage))} />
+                    <span className="capitalize">{t(stage.toLowerCase(), { defaultValue: stage })}</span>
                   </div>
                   <span className="font-medium">{count}</span>
                 </div>

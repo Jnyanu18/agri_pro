@@ -11,6 +11,7 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartContainer } from '../ui/chart';
 import { Separator } from '../ui/separator';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 interface ReportPageProps {
   imageUrl: string | null;
@@ -18,6 +19,21 @@ interface ReportPageProps {
   forecastResult: ForecastResult | null;
   marketResult: MarketPriceForecastingOutput | null;
   controls: AppControls;
+}
+
+const stageColors: { [key: string]: string } = {
+  flower: "bg-pink-400",
+  immature: "bg-green-500",
+  breaker: "bg-lime-400",
+  ripening: "bg-amber-500",
+  pink: "bg-rose-400",
+  mature: "bg-red-500",
+  fruitlet: "bg-yellow-300",
+  default: "bg-gray-400",
+};
+
+const getStageColor = (stage: string) => {
+  return stageColors[stage.toLowerCase()] || stageColors.default;
 }
 
 export function ReportPage({
@@ -54,19 +70,22 @@ export function ReportPage({
                         <Card>
                             <CardHeader><CardTitle className="font-headline text-lg">{t('report_analyzed_image')}</CardTitle></CardHeader>
                             <CardContent>
-                                {imageUrl && <Image src={imageUrl} alt="Tomato Plant" width={400} height={300} className="rounded-lg object-cover" />}
+                                {imageUrl && <Image src={imageUrl} alt="Plant Analysis" width={400} height={300} className="rounded-lg object-cover" />}
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader><CardTitle className="font-headline text-lg">{t('report_detection_summary')}</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className="font-headline text-lg">{t('report_detection_summary_for', { plant: detectionResult.plantType })}</CardTitle></CardHeader>
                             <CardContent className="space-y-2 text-sm">
                                 <p>{detectionResult.summary}</p>
-                                <div className="flex justify-between"><span>{t('flower')}:</span> <span>{detectionResult.stageCounts.flower}</span></div>
-                                <div className="flex justify-between"><span>{t('immature')}:</span> <span>{detectionResult.stageCounts.immature}</span></div>
-                                <div className="flex justify-between"><span>{t('breaker')}:</span> <span>{detectionResult.stageCounts.breaker}</span></div>
-                                <div className="flex justify-between"><span>{t('ripening')}:</span> <span>{detectionResult.stageCounts.ripening}</span></div>
-                                <div className="flex justify-between"><span>{t('pink')}:</span> <span>{detectionResult.stageCounts.pink}</span></div>
-                                <div className="flex justify-between font-semibold"><span>{t('mature')}:</span> <span>{detectionResult.stageCounts.mature}</span></div>
+                                {detectionResult.stages?.map(({stage, count}) => (
+                                    <div key={stage} className="flex justify-between items-center">
+                                        <div className="flex items-center gap-2">
+                                            <span className={cn("h-2 w-2 rounded-full", getStageColor(stage))} />
+                                            <span className="capitalize">{t(stage.toLowerCase(), { defaultValue: stage })}:</span>
+                                        </div>
+                                        <span>{count}</span>
+                                    </div>
+                                ))}
                             </CardContent>
                         </Card>
                     </div>

@@ -10,9 +10,9 @@ import {
   type MarketPriceForecastingInput,
 } from '@/ai/flows/market-price-forecasting';
 import {
-  analyzeTomato,
-  type AnalyzeTomatoInput,
-} from '@/ai/flows/tomato-analysis';
+  analyzePlant,
+  type AnalyzePlantInput,
+} from '@/ai/flows/plant-analysis';
 import { runWeatherForYield, type WeatherForYieldInput } from '@/ai/flows/yield-forecasting';
 import { WeatherData } from '@/lib/types';
 
@@ -38,12 +38,12 @@ export async function runChatAssistant(input: ChatAssistantForInsightsInput) {
   }
 }
 
-export async function runTomatoAnalysis(input: AnalyzeTomatoInput) {
+export async function runPlantAnalysis(input: AnalyzePlantInput) {
   try {
-    const result = await analyzeTomato(input);
+    const result = await analyzePlant(input);
     return { success: true, data: result };
   } catch (error) {
-    console.error('Error in tomato analysis flow:', error);
+    console.error('Error in plant analysis flow:', error);
     let errorMessage = 'An unknown error occurred during analysis.';
     if (error instanceof Error) {
         if (error.message.includes('API key not valid')) {

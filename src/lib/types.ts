@@ -1,7 +1,7 @@
 
 import { z } from 'zod';
 
-export type Stage = 'immature' | 'ripening' | 'mature' | 'flower' | 'breaker' | 'pink';
+export type Stage = 'immature' | 'ripening' | 'mature' | 'flower' | 'breaker' | 'pink' | 'fruitlet';
 
 export const AppControlsSchema = z.object({
   avgWeightG: z.number(),
@@ -23,22 +23,26 @@ export interface DetectionBox {
   stage: Stage;
 }
 
+// This remains useful for client-side calculations that might depend on specific known stages
 export const StageCountsSchema = z.object({
-    flower: z.number().describe("Count of visible flowers."),
-    immature: z.number().describe("Count of immature (green) tomatoes."),
-    breaker: z.number().describe("Count of breaker stage tomatoes (first sign of color)."),
-    ripening: z.number().describe("Count of ripening (yellow/orange) tomatoes."),
-    pink: z.number().describe("Count of pink tomatoes (mostly colored but not fully red)."),
-    mature: z.number().describe("Count of mature (red) tomatoes."),
-});
+    flower: z.number().optional(),
+    immature: z.number().optional(),
+    breaker: z.number().optional(),
+    ripening: z.number().optional(),
+    pink: z.number().optional(),
+    mature: z.number().optional(),
+    fruitlet: z.number().optional(),
+}).passthrough(); // Allow other keys
 export type StageCounts = z.infer<typeof StageCountsSchema>;
 
 export interface DetectionResult {
   plantId: number;
+  plantType: string;
   detections: number;
   boxes: DetectionBox[];
-  stageCounts: StageCounts;
-  growthStage: 'Immature' | 'Ripening' | 'Mature';
+  stageCounts: StageCounts; // An object for quick lookups
+  stages: { stage: string, count: number }[]; // A flexible array for dynamic UI rendering
+  growthStage: 'Immature' | 'Ripening' | 'Mature' | 'Varies';
   avgBboxArea: number;
   confidence: number;
   imageUrl: string;
@@ -84,7 +88,7 @@ export interface ChatMessage {
 
 // == AI Flow Schemas ==
 
-export const AnalyzeTomatoInputSchema = z.object({
+export const AnalyzePlantInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
@@ -92,13 +96,18 @@ export const AnalyzeTomatoInputSchema = z.object({
     ),
   contentType: z.string().describe('The MIME type of the image, e.g., "image/jpeg".'),
 });
-export type AnalyzeTomatoInput = z.infer<typeof AnalyzeTomatoInputSchema>;
+export type AnalyzePlantInput = z.infer<typeof AnalyzePlantInputSchema>;
 
-export const TomatoAnalysisResultSchema = z.object({
+
+export const PlantAnalysisResultSchema = z.object({
+  plantType: z.string().describe("The identified type of plant, e.g., 'Tomato', 'Lemon'."),
   summary: z.string().describe("A short summary of the detection results."),
-  counts: StageCountsSchema.describe("The counts of tomatoes and flowers classified by growth stage."),
+  stages: z.array(z.object({
+    stage: z.string().describe("The name of the growth stage (e.g., 'flower', 'immature', 'mature')."),
+    count: z.number().describe("The number of items found in this stage."),
+  })).describe("An array of stages and their respective counts."),
 });
-export type TomatoAnalysisResult = z.infer<typeof TomatoAnalysisResultSchema>;
+export type PlantAnalysisResult = z.infer<typeof PlantAnalysisResultSchema>;
 
 export const WeatherDataSchema = z.object({
     date: z.string().describe('The date for the forecast in YYYY-MM-DD format.'),
@@ -108,7 +117,7 @@ export const WeatherDataSchema = z.object({
 export type WeatherData = z.infer<typeof WeatherDataSchema>;
 
 export const YieldForecastingInputSchema = z.object({
-  detectionResult: TomatoAnalysisResultSchema,
+  detectionResult: PlantAnalysisResultSchema,
   weatherData: z.array(WeatherDataSchema),
   controls: AppControlsSchema,
 });
