@@ -4,7 +4,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Camera, LineChart, MessageCircle, BarChart as BarChartIcon } from 'lucide-react';
-import type { AppControls, DetectionResult, ForecastResult, ChatMessage, TomatoAnalysisResult } from '@/lib/types';
+import type { AppControls, DetectionResult, ForecastResult, ChatMessage, TomatoAnalysisResult, StageCounts, WeatherData } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarInset } from '@/components/ui/sidebar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,7 +14,7 @@ import { DetectionTab } from '@/components/agrivision/detection-tab';
 import { ForecastTab } from '@/components/agrivision/forecast-tab';
 import { MarketTab } from '@/components/agrivision/market-tab';
 import { ChatTab } from '@/components/agrivision/chat-tab';
-import { calculateYieldForecast } from '@/lib/mock-data';
+import { calculateYieldForecast as calculateMockYieldForecast } from '@/lib/mock-data';
 import type { MarketPriceForecastingOutput } from '@/ai/flows/market-price-forecasting';
 import { useToast } from '@/hooks/use-toast';
 import { runTomatoAnalysis, runAIForecast } from '@/app/actions';
@@ -22,6 +22,82 @@ import { dataURLtoFile } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ReportPage } from './report-page';
 import { useTranslation } from 'react-i18next';
+
+
+// This function now lives on the client to process data from the AI flow
+const calculateYieldForecastWithWeather = (
+    stageCounts: StageCounts,
+    weatherData: WeatherData[],
+    controls: AppControls
+): ForecastResult => {
+    const { avgWeightG, postHarvestLossPct, numPlants, forecastDays, gddBaseC, harvestCapacityKgDay } = controls;
+
+    const totalDetections = stageCounts.immature + stageCounts.ripening + stageCounts.mature;
+    const yield_now_kg_per_plant = (stageCounts.mature * avgWeightG) / 1000;
+    const yield_now_kg = yield_now_kg_per_plant * numPlants;
+    const sellable_kg = yield_now_kg * (1 - postHarvestLossPct / 100);
+
+    const daily: ForecastResult['daily'] = [];
+    const ripeningGDD = 80;
+    const maturingGDD = 55;
+    
+    let immatureCount = stageCounts.immature;
+    let ripeningCount = stageCounts.ripening;
+    let cumGDD = 0;
+
+    for (let i = 0; i < Math.min(forecastDays, weatherData.length); i++) {
+        const dayWeather = weatherData[i];
+        const date = dayWeather.date;
+        const avgTemp = (dayWeather.temp_max_c + dayWeather.temp_min_c) / 2;
+        const dailyGDD = Math.max(0, avgTemp - gddBaseC);
+        cumGDD += dailyGDD;
+
+        const newRipening = immatureCount * Math.min(1, (dailyGDD / ripeningGDD));
+        const newMature = ripeningCount * Math.min(1, (dailyGDD / maturingGDD));
+        
+        immatureCount -= newRipening;
+        ripeningCount = ripeningCount - newMature + newRipening;
+        const matureCount = totalDetections - immatureCount - ripeningCount;
+
+        daily.push({
+            date: date,
+            ready_kg: (matureCount * avgWeightG / 1000) * numPlants,
+            gdd_cum: cumGDD,
+        });
+    }
+
+    const harvest_plan: ForecastResult['harvest_plan'] = [];
+    let cumulativeReadyKg = 0;
+    let lastHarvestedKg = 0;
+    for (const day of daily) {
+        cumulativeReadyKg += (day.ready_kg - lastHarvestedKg);
+        const canHarvest = Math.min(cumulativeReadyKg, harvestCapacityKgDay);
+        if(canHarvest > 0.1) {
+            harvest_plan.push({
+                date: day.date,
+                harvest_kg: canHarvest,
+            });
+            cumulativeReadyKg -= canHarvest;
+        }
+        lastHarvestedKg = day.ready_kg;
+    }
+    
+    const harvestWindow = harvest_plan.length > 0
+        ? { start: harvest_plan[0].date, end: harvest_plan[harvest_plan.length - 1].date }
+        : undefined;
+    
+    return {
+        yield_now_kg,
+        sellable_kg,
+        daily,
+        harvest_plan,
+        harvestWindow,
+        notes: [
+            `Forecast is based on a weather prediction for ${controls.district}.`,
+            `Harvest plan is optimized for a capacity of ${harvestCapacityKgDay} kg/day.`,
+        ],
+    };
+};
 
 
 export function Dashboard() {
@@ -122,18 +198,17 @@ export function Dashboard() {
       if (analysisResult) {
           let forecast: ForecastResult;
           if (controls.useLiveWeather) {
-              // Use the new AI-powered forecasting flow
               const forecastResponse = await runAIForecast({
-                  stageCounts: analysisResult.stageCounts,
-                  controls: controls
+                  district: controls.district,
+                  forecastDays: controls.forecastDays,
               });
               if (!forecastResponse.success || !forecastResponse.data) {
                   throw new Error(forecastResponse.error || "AI forecast failed.");
               }
-              forecast = forecastResponse.data;
+              forecast = calculateYieldForecastWithWeather(analysisResult.stageCounts, forecastResponse.data, controls);
           } else {
               // Use the old client-side calculation as a fallback
-              forecast = calculateYieldForecast(analysisResult, controls);
+              forecast = calculateMockYieldForecast(analysisResult, controls);
           }
           setForecastResult(forecast);
           setActiveTab('forecast');
@@ -150,7 +225,7 @@ export function Dashboard() {
   React.useEffect(() => {
     // Recalculate forecast whenever controls change AND a detection result exists
     if(detectionResult && !controls.useLiveWeather) {
-      const forecast = calculateYieldForecast(detectionResult, controls);
+      const forecast = calculateMockYieldForecast(detectionResult, controls);
       setForecastResult(forecast);
     }
     // If useLiveWeather is on, re-running the full analysis is required, so we don't auto-recalculate here.

@@ -98,11 +98,6 @@ export const TomatoAnalysisResultSchema = z.object({
 });
 export type TomatoAnalysisResult = z.infer<typeof TomatoAnalysisResultSchema>;
 
-export const YieldForecastingInputSchema = z.object({
-    stageCounts: StageCountsSchema,
-    controls: AppControlsSchema,
-});
-
 export const WeatherDataSchema = z.object({
     date: z.string().describe('The date for the forecast in YYYY-MM-DD format.'),
     temp_max_c: z.number().describe('The maximum forecasted temperature in Celsius.'),

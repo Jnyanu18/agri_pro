@@ -13,7 +13,8 @@ import {
   analyzeTomato,
   type AnalyzeTomatoInput,
 } from '@/ai/flows/tomato-analysis';
-import { runYieldForecasting, type YieldForecastingInput } from '@/ai/flows/yield-forecasting';
+import { runWeatherForYield, type WeatherForYieldInput } from '@/ai/flows/yield-forecasting';
+import { WeatherData } from '@/lib/types';
 
 export async function runMarketPriceForecasting(
   input: MarketPriceForecastingInput
@@ -55,12 +56,13 @@ export async function runTomatoAnalysis(input: AnalyzeTomatoInput) {
   }
 }
 
-export async function runAIForecast(input: YieldForecastingInput) {
+export async function runAIForecast(input: WeatherForYieldInput): Promise<{ success: boolean, data?: WeatherData[], error?: string }> {
     try {
-        const result = await runYieldForecasting(input);
+        const result = await runWeatherForYield(input);
         return { success: true, data: result };
     } catch (error) {
         console.error('Error in yield forecasting flow:', error);
-        return { success: false, error: 'Failed to run AI-powered forecast.' };
+        const errorMessage = error instanceof Error ? error.message : 'Failed to run AI-powered forecast.';
+        return { success: false, error: errorMessage };
     }
 }
