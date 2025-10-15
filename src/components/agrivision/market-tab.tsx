@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -15,8 +16,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Line, LineChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { formatNumber } from '@/lib/utils';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { CalendarCheck, DollarSign, LineChart as LineChartIcon, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface MarketTabProps {
   sellableKg: number;
@@ -33,6 +34,7 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
   const [result, setResult] = useState<MarketPriceForecastingOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,8 +75,8 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
       <div className="md:col-span-1 space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Market Forecast</CardTitle>
-            <CardDescription>Predict future tomato prices to find the best time to sell.</CardDescription>
+            <CardTitle className="font-headline">{t('market_forecast')}</CardTitle>
+            <CardDescription>{t('market_forecast_desc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -84,7 +86,7 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
                   name="district"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>District</FormLabel>
+                      <FormLabel>{t('district')}</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., Coimbatore" {...field} />
                       </FormControl>
@@ -97,7 +99,7 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
                   name="daysAhead"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Forecast Days</FormLabel>
+                      <FormLabel>{t('forecast_days')}</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} />
                       </FormControl>
@@ -106,7 +108,7 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
                   )}
                 />
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? 'Forecasting...' : 'Forecast Prices'}
+                  {isLoading ? t('forecasting') : t('forecast_prices')}
                 </Button>
               </form>
             </Form>
@@ -115,26 +117,26 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
         {result && (
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">Profit Outlook</CardTitle>
+                    <CardTitle className="font-headline">{t('profit_outlook')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex items-start justify-between">
                         <div className="text-sm">
-                            <div className="text-muted-foreground">Best Sell Date</div>
+                            <div className="text-muted-foreground">{t('best_sell_date')}</div>
                             <div className="font-bold text-lg">{new Date(result.bestDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</div>
                         </div>
                         <CalendarCheck className="w-8 h-8 text-primary"/>
                     </div>
                      <div className="flex items-start justify-between">
                         <div className="text-sm">
-                            <div className="text-muted-foreground">Est. Price</div>
+                            <div className="text-muted-foreground">{t('est_price')}</div>
                             <div className="font-bold text-lg">₹{formatNumber(result.bestPrice)} / kg</div>
                         </div>
                         <TrendingUp className="w-8 h-8 text-primary"/>
                     </div>
                      <div className="flex items-start justify-between">
                         <div className="text-sm">
-                            <div className="text-muted-foreground">Expected Revenue</div>
+                            <div className="text-muted-foreground">{t('expected_revenue')}</div>
                             <div className="font-bold text-lg">₹{formatNumber(expectedRevenue)}</div>
                         </div>
                         <DollarSign className="w-8 h-8 text-primary"/>
@@ -146,9 +148,9 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
       <div className="md:col-span-2">
         <Card className="h-full">
           <CardHeader>
-            <CardTitle className="font-headline">Price Forecast Chart</CardTitle>
+            <CardTitle className="font-headline">{t('price_forecast_chart')}</CardTitle>
             <CardDescription>
-              {result ? `Price trend for ${form.getValues('district')} over the next ${form.getValues('daysAhead')} days.` : 'Run a forecast to see price trends.'}
+              {result ? t('price_forecast_chart_desc', { district: form.getValues('district'), days: form.getValues('daysAhead') }) : t('run_forecast_to_see_trends')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -156,8 +158,8 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
             !result ? (
                 <div className="flex flex-col h-[400px] items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center">
                     <LineChartIcon className="h-16 w-16 text-muted-foreground" />
-                    <h3 className="font-headline text-xl font-semibold">No Price Data</h3>
-                    <p className="text-muted-foreground">Your price forecast chart will appear here.</p>
+                    <h3 className="font-headline text-xl font-semibold">{t('no_price_data')}</h3>
+                    <p className="text-muted-foreground">{t('no_price_data_desc')}</p>
                 </div>
             ) : (
               <ChartContainer config={chartConfig} className="h-[400px] w-full">

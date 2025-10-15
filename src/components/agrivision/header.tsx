@@ -1,11 +1,12 @@
 
+
 "use client";
 
-import { Leaf, LogOut } from 'lucide-react';
+import { Leaf, LogOut, Globe } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '../ui/button';
-import { BookText, Download, Info } from 'lucide-react';
+import { BookText, Download } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,14 +15,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { ScrollArea } from '../ui/scroll-area';
+import { useTranslation } from 'react-i18next';
+import { supportedLngs } from '@/lib/i18n';
 
 export function AgriVisionHeader() {
   const auth = useAuth();
   const router = useRouter();
+  const { t, i18n } = useTranslation();
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -33,20 +43,20 @@ export function AgriVisionHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6 print:hidden">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 print:hidden">
        <div className="md:hidden">
           <SidebarTrigger />
         </div>
       <div className="flex items-center gap-2">
         <Leaf className="h-6 w-6 text-primary" />
         <h1 className="font-headline text-2xl font-bold tracking-tight">
-          AgriVisionAI
+          {t('agrivision_ai')}
         </h1>
       </div>
       <div className="ml-auto flex items-center gap-2">
          <Button variant="outline" size="sm" onClick={handlePrint}>
             <Download className="mr-2 h-4 w-4" />
-            Download Report
+            {t('download_report')}
         </Button>
         <Dialog>
           <DialogTrigger asChild>
@@ -56,9 +66,9 @@ export function AgriVisionHeader() {
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle className="font-headline text-2xl">Project Report: AgriVisionAI</DialogTitle>
+              <DialogTitle className="font-headline text-2xl">{t('project_report_title')}</DialogTitle>
               <DialogDescription>
-                An overview of the project's architecture, features, and technology stack.
+                {t('project_report_description')}
               </DialogDescription>
             </DialogHeader>
             <ScrollArea className="max-h-[70vh] pr-6">
@@ -111,7 +121,7 @@ export function AgriVisionHeader() {
                      <div className="space-y-2">
                         <h3 className="font-headline text-lg font-semibold text-foreground">6. Firebase Integration</h3>
                         <ul className="list-disc pl-5 space-y-1">
-                            <li><span className="font-semibold">User Management:</span> Firebase Authentication handles the entire user lifecycle.</li>
+                            <li><span className="fontsemibold">User Management:</span> Firebase Authentication handles the entire user lifecycle.</li>
                             <li><span className="font-semibold">Security:</span> The app uses standard Firebase client-side practices, with security enforced by Firestore Security Rules.</li>
                         </ul>
                     </div>
@@ -119,10 +129,29 @@ export function AgriVisionHeader() {
             </ScrollArea>
           </DialogContent>
         </Dialog>
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                    <Globe className="h-5 w-5" />
+                    <span className="sr-only">Change language</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                 {Object.entries(supportedLngs).map(([code, name]) => (
+                    <DropdownMenuItem
+                        key={code}
+                        onClick={() => i18n.changeLanguage(code)}
+                        disabled={i18n.resolvedLanguage === code}
+                    >
+                        {name}
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuContent>
+        </DropdownMenu>
         <ThemeToggle />
-        <Button variant="ghost" size="icon" onClick={handleLogout}>
+        <Button variant="ghost" size="icon" onClick={handleLogout} aria-label={t('logout')}>
           <LogOut className="h-5 w-5" />
-          <span className="sr-only">Logout</span>
+          <span className="sr-only">{t('logout')}</span>
         </Button>
       </div>
     </header>

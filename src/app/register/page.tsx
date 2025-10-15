@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -23,6 +24,7 @@ import { useAuth, useUser } from '@/firebase';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Leaf } from 'lucide-react';
 import { onAuthStateChanged } from 'firebase/auth';
+import { useTranslation } from 'react-i18next';
 
 const formSchema = z.object({
   email: z.string().email({
@@ -39,6 +41,7 @@ export default function RegisterPage() {
   const router = useRouter();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
+  const { t } = useTranslation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -95,8 +98,8 @@ export default function RegisterPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="items-center text-center">
           <Leaf className="h-10 w-10 text-primary" />
-          <CardTitle className="font-headline text-2xl">Create an Account</CardTitle>
-          <CardDescription>Join AgriVisionAI to start analyzing your yield</CardDescription>
+          <CardTitle className="font-headline text-2xl">{t('create_account')}</CardTitle>
+          <CardDescription>{t('join_to_analyze')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -106,7 +109,7 @@ export default function RegisterPage() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>{t('email')}</FormLabel>
                     <FormControl>
                       <Input placeholder="name@example.com" {...field} />
                     </FormControl>
@@ -119,7 +122,7 @@ export default function RegisterPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>{t('password')}</FormLabel>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
@@ -128,16 +131,16 @@ export default function RegisterPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Creating Account...' : 'Register'}
+                {isLoading ? t('creating_account') : t('register')}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="justify-center text-sm">
           <p>
-            Already have an account?{' '}
+            {t('already_have_account')}{' '}
             <Link href="/login" className="font-semibold text-primary hover:underline">
-              Login
+              {t('login')}
             </Link>
           </p>
         </CardFooter>

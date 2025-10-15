@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
@@ -12,6 +13,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import type { MarketPriceForecastingOutput } from '@/ai/flows/market-price-forecasting';
 import type { AppControls, DetectionResult, ForecastResult } from '@/lib/types';
+import { useTranslation } from 'react-i18next';
 
 interface ChatTabProps {
   appState: {
@@ -29,6 +31,7 @@ export function ChatTab({ appState, chatHistory, setChatHistory }: ChatTabProps)
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -74,8 +77,8 @@ export function ChatTab({ appState, chatHistory, setChatHistory }: ChatTabProps)
           {chatHistory.length === 0 ? (
              <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center h-full">
                 <Sparkles className="h-16 w-16 text-muted-foreground" />
-                <h3 className="font-headline text-xl font-semibold">AI Assistant</h3>
-                <p className="text-muted-foreground">Ask questions about your detection and forecast results. Try "What is my current sellable yield?" or "When is the best time to sell?".</p>
+                <h3 className="font-headline text-xl font-semibold">{t('ai_assistant_title')}</h3>
+                <p className="text-muted-foreground">{t('ai_assistant_desc')}</p>
             </div>
           ) : (
             chatHistory.map(message => (
@@ -100,7 +103,7 @@ export function ChatTab({ appState, chatHistory, setChatHistory }: ChatTabProps)
                   <AvatarFallback><Sparkles className="h-4 w-4" /></AvatarFallback>
                 </Avatar>
                 <div className="max-w-md rounded-lg p-3 text-sm bg-muted animate-pulse">
-                    Thinking...
+                    {t('thinking')}
                 </div>
               </div>
             )}
@@ -111,7 +114,7 @@ export function ChatTab({ appState, chatHistory, setChatHistory }: ChatTabProps)
           <Input
             value={input}
             onChange={e => setInput(e.target.value)}
-            placeholder="Ask about your yield, forecast, or market prices..."
+            placeholder={t('ask_about_yield')}
             disabled={isLoading}
           />
           <Button type="submit" disabled={isLoading || !input.trim()}>

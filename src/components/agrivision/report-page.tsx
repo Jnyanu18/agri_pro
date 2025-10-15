@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import type { AppControls, DetectionResult, ForecastResult } from '@/lib/types';
@@ -9,6 +10,7 @@ import { formatNumber } from '@/lib/utils';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartContainer } from '../ui/chart';
 import { Separator } from '../ui/separator';
+import { useTranslation } from 'react-i18next';
 
 interface ReportPageProps {
   imageUrl: string | null;
@@ -25,23 +27,24 @@ export function ReportPage({
   marketResult,
   controls,
 }: ReportPageProps) {
+  const { t } = useTranslation();
   if (!detectionResult || !forecastResult || !marketResult) {
     return null;
   }
   
   const totalHarvest = forecastResult.harvest_plan.reduce((a, b) => a + b.harvest_kg, 0);
   const expectedRevenue = forecastResult.sellable_kg * marketResult.bestPrice;
-  const chartConfig = { ready_kg: { label: 'Ready (kg)', color: 'hsl(var(--primary))' } };
+  const chartConfig = { ready_kg: { label: t('ready_kg'), color: 'hsl(var(--primary))' } };
 
   return (
     <div className="absolute left-0 top-0 -z-50 h-full w-full bg-background font-body print:relative print:z-auto">
         <div className="hidden print:block p-8">
             <header className="flex items-center justify-between pb-8">
                 <div>
-                    <h1 className="font-headline text-3xl font-bold text-primary">AgriVisionAI Report</h1>
-                    <p className="text-muted-foreground">Analysis for {new Date().toLocaleDateString()}</p>
+                    <h1 className="font-headline text-3xl font-bold text-primary">{t('agrivision_ai')} Report</h1>
+                    <p className="text-muted-foreground">{t('report_analysis_date', { date: new Date().toLocaleDateString() })}</p>
                 </div>
-                <p className="text-sm text-muted-foreground">District: {controls.district}</p>
+                <p className="text-sm text-muted-foreground">{t('report_district', { district: controls.district })}</p>
             </header>
 
             <div className="space-y-6">
@@ -49,19 +52,19 @@ export function ReportPage({
                     {/* Column 1: Image & Detection */}
                     <div className="col-span-1 space-y-4">
                         <Card>
-                            <CardHeader><CardTitle className="font-headline text-lg">Analyzed Image</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className="font-headline text-lg">{t('report_analyzed_image')}</CardTitle></CardHeader>
                             <CardContent>
                                 {imageUrl && <Image src={imageUrl} alt="Tomato Plant" width={400} height={300} className="rounded-lg object-cover" />}
                             </CardContent>
                         </Card>
                         <Card>
-                            <CardHeader><CardTitle className="font-headline text-lg">Detection Summary</CardTitle></CardHeader>
+                            <CardHeader><CardTitle className="font-headline text-lg">{t('report_detection_summary')}</CardTitle></CardHeader>
                             <CardContent className="space-y-2 text-sm">
                                 <p>{detectionResult.summary}</p>
-                                <div className="flex justify-between"><span>Flowers:</span> <span>{detectionResult.stageCounts.flower}</span></div>
-                                <div className="flex justify-between"><span>Immature:</span> <span>{detectionResult.stageCounts.immature}</span></div>
-                                <div className="flex justify-between"><span>Ripening:</span> <span>{detectionResult.stageCounts.ripening}</span></div>
-                                <div className="flex justify-between font-semibold"><span>Mature:</span> <span>{detectionResult.stageCounts.mature}</span></div>
+                                <div className="flex justify-between"><span>{t('flower')}:</span> <span>{detectionResult.stageCounts.flower}</span></div>
+                                <div className="flex justify-between"><span>{t('immature')}:</span> <span>{detectionResult.stageCounts.immature}</span></div>
+                                <div className="flex justify-between"><span>{t('ripening')}:</span> <span>{detectionResult.stageCounts.ripening}</span></div>
+                                <div className="flex justify-between font-semibold"><span>{t('mature')}:</span> <span>{detectionResult.stageCounts.mature}</span></div>
                             </CardContent>
                         </Card>
                     </div>
@@ -69,19 +72,19 @@ export function ReportPage({
                     {/* Column 2: Key Metrics & Chart */}
                     <div className="col-span-2 space-y-4">
                         <div className="grid grid-cols-3 gap-4">
-                            <MetricCard title="Current Yield" value={`${formatNumber(forecastResult.yield_now_kg)} kg`} />
-                            <MetricCard title="Sellable Yield" value={`${formatNumber(forecastResult.sellable_kg)} kg`} />
-                            <MetricCard title="Total Harvest" value={`${formatNumber(totalHarvest)} kg`} />
+                            <MetricCard title={t('metric_current_yield')} value={`${formatNumber(forecastResult.yield_now_kg)} kg`} />
+                            <MetricCard title={t('metric_sellable_yield')} value={`${formatNumber(forecastResult.sellable_kg)} kg`} />
+                            <MetricCard title={t('metric_total_harvest')} value={`${formatNumber(totalHarvest)} kg`} />
                         </div>
                         <Separator />
                         <div className="grid grid-cols-3 gap-4">
-                             <MetricCard title="Best Sell Date" value={new Date(marketResult.bestDate).toLocaleDateString('en-us', {month: 'short', day: 'numeric'})} />
-                            <MetricCard title="Best Price" value={`₹${formatNumber(marketResult.bestPrice)}/kg`} />
-                            <MetricCard title="Est. Revenue" value={`₹${formatNumber(expectedRevenue)}`} />
+                             <MetricCard title={t('metric_best_sell_date')} value={new Date(marketResult.bestDate).toLocaleDateString('en-us', {month: 'short', day: 'numeric'})} />
+                            <MetricCard title={t('metric_best_price')} value={`₹${formatNumber(marketResult.bestPrice)}/kg`} />
+                            <MetricCard title={t('metric_est_revenue')} value={`₹${formatNumber(expectedRevenue)}`} />
                         </div>
                         <Card>
                             <CardHeader>
-                                <CardTitle className="font-headline text-lg">Ready to Harvest Forecast (kg)</CardTitle>
+                                <CardTitle className="font-headline text-lg">{t('report_ready_harvest_forecast')}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <ChartContainer config={chartConfig} className="h-[250px] w-full">

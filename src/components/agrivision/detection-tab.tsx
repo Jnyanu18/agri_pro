@@ -7,6 +7,13 @@ import type { DetectionResult, Stage } from "@/lib/types";
 import { ImageWithBoxes } from "./image-with-boxes";
 import { UploadCloud } from "lucide-react";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
+
+interface DetectionTabProps {
+  result: DetectionResult | null;
+  isLoading: boolean;
+  imageUrl: string | null;
+}
 
 const stageBG: Record<Stage, string> = {
   flower: "bg-pink-400",
@@ -16,6 +23,7 @@ const stageBG: Record<Stage, string> = {
 };
 
 export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps) {
+  const { t } = useTranslation();
   if (isLoading) {
     return <DetectionSkeleton />;
   }
@@ -24,8 +32,8 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
     return (
       <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center">
         <UploadCloud className="h-16 w-16 text-muted-foreground" />
-        <h3 className="font-headline text-xl font-semibold">Start Your Analysis</h3>
-        <p className="text-muted-foreground">Upload an image of your tomato plant to begin detection.</p>
+        <h3 className="font-headline text-xl font-semibold">{t('start_analysis_title')}</h3>
+        <p className="text-muted-foreground">{t('start_analysis_desc')}</p>
       </div>
     );
   }
@@ -34,9 +42,9 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
     return (
         <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle className="font-headline">Awaiting Analysis</CardTitle>
+            <CardTitle className="font-headline">{t('awaiting_analysis_title')}</CardTitle>
             <CardDescription>
-              Click "Analyze & Forecast" to process the uploaded image.
+              {t('awaiting_analysis_desc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -67,9 +75,9 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <Card className="lg:col-span-2">
         <CardHeader>
-          <CardTitle className="font-headline">Detection Result</CardTitle>
+          <CardTitle className="font-headline">{t('detection_result')}</CardTitle>
           <CardDescription>
-            {summary || `Analyzed image with ${detections} tomatoes detected.`}
+            {summary || t('analyzed_image_summary', { count: detections })}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -80,7 +88,7 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Stage Classification</CardTitle>
+            <CardTitle className="font-headline">{t('stage_classification')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
              {totalFruits > 0 && (
@@ -95,7 +103,7 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
                 <div key={stage} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className={`h-2 w-2 rounded-full ${stageBG[stage as Stage]}`} />
-                    <span className="capitalize">{stage}</span>
+                    <span className="capitalize">{t(stage as Stage)}</span>
                   </div>
                   <span className="font-medium">{count}</span>
                 </div>

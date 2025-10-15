@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Loader2, UploadCloud } from 'lucide-react'
 import { Slider } from '../ui/slider'
+import { useTranslation } from 'react-i18next'
 
 interface SidebarControlsProps {
   controls: AppControls
@@ -24,9 +25,10 @@ export function SidebarControls({
   setControls,
   onImageUpload,
   onAnalyze,
-isLoading,
+  isLoading,
 }: SidebarControlsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation()
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -51,19 +53,19 @@ isLoading,
     max: number;
     step: number;
   }[] = [
-    { key: 'avgWeightG', label: 'Avg Fruit Weight', type: 'slider', unit: 'g', min: 50, max: 150, step: 1 },
-    { key: 'postHarvestLossPct', label: 'Post-harvest Loss', type: 'slider', unit: '%', min: 0, max: 30, step: 1 },
-    { key: 'numPlants', label: 'Number of Plants', type: 'input', unit: '', min: 1, max: 1000, step: 1 },
-    { key: 'forecastDays', label: 'Forecast Horizon', type: 'input', unit: 'days', min: 1, max: 30, step: 1 },
-    { key: 'harvestCapacityKgDay', label: 'Harvest Capacity', type: 'input', unit: 'kg/day', min: 1, max: 500, step: 5 },
-    { key: 'gddBaseC', label: 'GDD Base', type: 'input', unit: '°C', min: 5, max: 15, step: 1 },
+    { key: 'avgWeightG', label: t('avg_fruit_weight'), type: 'slider', unit: 'g', min: 50, max: 150, step: 1 },
+    { key: 'postHarvestLossPct', label: t('post_harvest_loss'), type: 'slider', unit: '%', min: 0, max: 30, step: 1 },
+    { key: 'numPlants', label: t('num_plants'), type: 'input', unit: '', min: 1, max: 1000, step: 1 },
+    { key: 'forecastHorizon', label: t('forecast_horizon'), type: 'input', unit: 'days', min: 1, max: 30, step: 1 },
+    { key: 'harvestCapacityKgDay', label: t('harvest_capacity'), type: 'input', unit: 'kg/day', min: 1, max: 500, step: 5 },
+    { key: 'gddBaseC', label: t('gdd_base'), type: 'input', unit: '°C', min: 5, max: 15, step: 1 },
   ]
   
   return (
     <div className="flex h-full flex-col gap-4 p-2">
       <Button onClick={() => fileInputRef.current?.click()} variant="outline">
         <UploadCloud className="mr-2 h-4 w-4" />
-        Upload Image
+        {t('upload_image')}
       </Button>
       <input
         type="file"
@@ -80,7 +82,7 @@ isLoading,
           <div key={item.key} className="space-y-2">
             <div className="flex justify-between items-center">
               <Label htmlFor={item.key}>{item.label}</Label>
-              <span className="text-xs text-muted-foreground">{controls[item.key]} {item.unit}</span>
+              <span className="text-xs text-muted-foreground">{controls[item.key as keyof AppControls]} {item.unit}</span>
             </div>
             {item.type === 'slider' ? (
                <Slider
@@ -88,14 +90,14 @@ isLoading,
                  min={item.min}
                  max={item.max}
                  step={item.step}
-                 value={[Number(controls[item.key])]}
+                 value={[Number(controls[item.key as keyof AppControls])]}
                  onValueChange={(value) => handleInputChange(item.key, value[0])}
                />
             ) : (
               <Input
                 id={item.key}
                 type="number"
-                value={String(controls[item.key])}
+                value={String(controls[item.key as keyof AppControls])}
                 onChange={e => handleInputChange(item.key, e.target.valueAsNumber)}
                 min={item.min}
                 max={item.max}
@@ -109,7 +111,7 @@ isLoading,
 
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <Label htmlFor="district">District</Label>
+                <Label htmlFor="district">{t('district')}</Label>
                 <Input
                     id="district"
                     value={controls.district}
@@ -119,8 +121,8 @@ isLoading,
             </div>
             <div className="flex items-center justify-between">
                 <Label htmlFor="use-live-weather" className="flex flex-col gap-1">
-                  <span>Use Live Weather</span>
-                  <span className="text-xs font-light text-muted-foreground">Uses an AI-powered forecast.</span>
+                  <span>{t('use_live_weather')}</span>
+                  <span className="text-xs font-light text-muted-foreground">{t('use_live_weather_desc')}</span>
                 </Label>
                 <Switch id="use-live-weather" checked={controls.useLiveWeather} onCheckedChange={(val) => handleInputChange('useLiveWeather', val)} />
             </div>
@@ -130,7 +132,7 @@ isLoading,
 
       <div className="mt-auto">
         <Button onClick={onAnalyze} className="w-full" disabled={isLoading}>
-          {isLoading ? <Loader2 className="animate-spin" /> : 'Analyze & Forecast'}
+          {isLoading ? <Loader2 className="animate-spin" /> : t('analyze_forecast')}
         </Button>
       </div>
     </div>

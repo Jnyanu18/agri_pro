@@ -1,8 +1,9 @@
 
+
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Camera, LineChart, MessageCircle, BarChartIcon } from 'lucide-react';
+import { Camera, LineChart, MessageCircle, BarChart as BarChartIcon } from 'lucide-react';
 import type { AppControls, DetectionResult, ForecastResult, ChatMessage, TomatoAnalysisResult } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sidebar, SidebarContent, SidebarHeader, SidebarInset } from '@/components/ui/sidebar';
@@ -20,6 +21,7 @@ import { runTomatoAnalysis, runAIForecast } from '@/app/actions';
 import { dataURLtoFile } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ReportPage } from './report-page';
+import { useTranslation } from 'react-i18next';
 
 
 export function Dashboard() {
@@ -27,6 +29,7 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState('detection');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   const [image, setImage] = useState<{ url: string | null; file: File | null, contentType: string | null }>({
     url: PlaceHolderImages[0]?.imageUrl || null,
@@ -161,17 +164,17 @@ export function Dashboard() {
   }), [controls, detectionResult, forecastResult, marketResult]);
 
   const navItems = [
-    { id: 'detection', label: 'Detection & Stage', icon: Camera },
-    { id: 'forecast', label: 'Forecast Dashboard', icon: BarChartIcon },
-    { id: 'market', label: 'Price & Profit', icon: LineChart },
-    { id: 'chat', label: 'Chat Assistant', icon: MessageCircle },
+    { id: 'detection', label: t('detection_stage'), icon: Camera },
+    { id: 'forecast', label: t('forecast_dashboard'), icon: BarChartIcon },
+    { id: 'market', label: t('price_profit'), icon: LineChart },
+    { id: 'chat', label: t('chat_assistant'), icon: MessageCircle },
   ];
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40 print:bg-white">
       <Sidebar variant="inset" side="left" collapsible="icon" className="group/sidebar print:hidden">
         <SidebarHeader>
-           <h2 className="font-headline text-xl font-semibold text-primary">AgriVisionAI</h2>
+           <h2 className="font-headline text-xl font-semibold text-primary">{t('agrivision_ai')}</h2>
         </SidebarHeader>
         <SidebarContent>
            <SidebarControls controls={controls} setControls={setControls} onImageUpload={handleImageUpload} onAnalyze={handleAnalysis} isLoading={isLoading} />
@@ -181,11 +184,11 @@ export function Dashboard() {
         <AgriVisionHeader />
         <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 print:hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className={isMobile ? 'grid w-full grid-cols-2' : ''}>
+            <TabsList className={isMobile ? 'grid w-full grid-cols-2' : 'grid w-full grid-cols-4'}>
               {navItems.map(item => (
                 <TabsTrigger key={item.id} value={item.id} className="gap-2">
                   <item.icon className="h-4 w-4" />
-                  {!isMobile && item.label}
+                  <span>{item.label}</span>
                 </TabsTrigger>
               ))}
             </TabsList>

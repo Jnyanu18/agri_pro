@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import type { ForecastResult } from '@/lib/types';
@@ -10,6 +11,7 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Skeleton } from '../ui/skeleton';
 import { formatNumber } from '@/lib/utils';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 interface ForecastTabProps {
   result: ForecastResult | null;
@@ -17,6 +19,7 @@ interface ForecastTabProps {
 }
 
 export function ForecastTab({ result, isLoading }: ForecastTabProps) {
+  const { t } = useTranslation();
   if (isLoading) {
     return <ForecastSkeleton />;
   }
@@ -25,8 +28,8 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
     return (
       <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center h-[50vh]">
         <BarChartIcon className="h-16 w-16 text-muted-foreground" />
-        <h3 className="font-headline text-xl font-semibold">No Forecast Data</h3>
-        <p className="text-muted-foreground">Upload an image and run the analysis to generate a yield forecast.</p>
+        <h3 className="font-headline text-xl font-semibold">{t('no_forecast_data_title')}</h3>
+        <p className="text-muted-foreground">{t('no_forecast_data_desc')}</p>
       </div>
     );
   }
@@ -35,7 +38,7 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
 
   const chartConfig = {
     ready_kg: {
-      label: 'Ready to Harvest (kg)',
+      label: t('ready_kg'),
       color: 'hsl(var(--primary))',
     },
   };
@@ -47,27 +50,27 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
       <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="font-headline text-base">Current Yield</CardTitle>
+            <CardTitle className="font-headline text-base">{t('current_yield')}</CardTitle>
             <Trees className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{formatNumber(yield_now_kg)} kg</div>
-            <p className="text-xs text-muted-foreground">Est. from mature fruit</p>
+            <p className="text-xs text-muted-foreground">{t('current_yield_desc')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="font-headline text-base">Sellable Yield</CardTitle>
+            <CardTitle className="font-headline text-base">{t('sellable_yield')}</CardTitle>
             <PackageCheck className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{formatNumber(sellable_kg)} kg</div>
-            <p className="text-xs text-muted-foreground">After post-harvest loss</p>
+            <p className="text-xs text-muted-foreground">{t('sellable_yield_desc')}</p>
           </CardContent>
         </Card>
         <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="font-headline text-base">Harvest Window</CardTitle>
+                <CardTitle className="font-headline text-base">{t('harvest_window')}</CardTitle>
                 <CalendarDays className="h-5 w-5 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -76,24 +79,24 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
                     <div className="text-xl font-bold">
                         {format(new Date(harvestWindow.start), 'MMM d')} - {format(new Date(harvestWindow.end), 'MMM d')}
                     </div>
-                    <p className="text-xs text-muted-foreground">Optimal harvest period</p>
+                    <p className="text-xs text-muted-foreground">{t('harvest_window_desc')}</p>
                 </>
                 ) : (
                 <>
                     <div className="text-xl font-bold">-</div>
-                    <p className="text-xs text-muted-foreground">No harvest scheduled</p>
+                    <p className="text-xs text-muted-foreground">{t('no_harvest_scheduled')}</p>
                 </>
                 )}
             </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="font-headline text-base">Total Forecasted</CardTitle>
+            <CardTitle className="font-headline text-base">{t('total_forecasted')}</CardTitle>
             <Shovel className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{formatNumber(totalHarvest)} kg</div>
-            <p className="text-xs text-muted-foreground">Total harvest in period</p>
+            <p className="text-xs text-muted-foreground">{t('total_forecasted_desc')}</p>
           </CardContent>
         </Card>
       </div>
@@ -101,8 +104,8 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Ready to Harvest Forecast</CardTitle>
-            <CardDescription>Projected amount of ripe tomatoes over the next {daily.length} days.</CardDescription>
+            <CardTitle className="font-headline">{t('ready_harvest_forecast')}</CardTitle>
+            <CardDescription>{t('ready_harvest_forecast_desc', { days: daily.length })}</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -111,7 +114,7 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
                 <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
                 <YAxis unit="kg" />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Area type="monotone" dataKey="ready_kg" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} name="Ready (kg)"/>
+                <Area type="monotone" dataKey="ready_kg" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} name={t('ready_kg')}/>
               </AreaChart>
             </ChartContainer>
           </CardContent>
@@ -119,15 +122,15 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Harvest Plan</CardTitle>
-            <CardDescription>Optimal daily harvest schedule based on capacity.</CardDescription>
+            <CardTitle className="font-headline">{t('harvest_plan')}</CardTitle>
+            <CardDescription>{t('harvest_plan_desc')}</CardDescription>
           </CardHeader>
           <CardContent className="max-h-[300px] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Harvest (kg)</TableHead>
+                  <TableHead>{t('date')}</TableHead>
+                  <TableHead className="text-right">{t('harvest_kg')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -138,7 +141,7 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={2} className="text-center text-muted-foreground">No harvest scheduled in forecast period.</TableCell>
+                    <TableCell colSpan={2} className="text-center text-muted-foreground">{t('no_harvest_in_period')}</TableCell>
                   </TableRow>
                 )}
               </TableBody>
