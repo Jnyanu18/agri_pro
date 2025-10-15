@@ -43,16 +43,14 @@ Generate a JSON object that forecasts the total yield from the current generatio
 1.  **Estimate Total Potential:** Calculate the total number of potential fruits by summing all counts (flowers, fruitlets, immature, etc.).
 2.  **Calculate Total Expected Yield (Kg):** Multiply the total potential fruit count by the average fruit weight and the number of plants. Convert grams to kilograms.
 3.  **Model the Yield Curve:** Based on the plant type ('{{{analysis.plantType}}}') and the initial stage distribution, project how these fruits will mature over the next {{{controls.forecastDays}}} days. Create a series of data points (date, yieldKg) showing the cumulative harvestable (mature) yield over time. Assume standard growth cycles for the plant type.
-4.  **Determine Peak Harvest Date:** Identify the date when the largest amount of fruit becomes ready for harvest. This is the peak of the ripening curve.
-5.  **Provide Confidence & Notes:** Assign a confidence score. This score should be lower if the forecast relies heavily on early-stage items like flowers, and higher if it's based on later-stage fruits. Aim for a confidence between 0.8 and 0.9 if there is a good mix of fruit stages.
-6.  **Provide Reasoning:** In the 'reasoning' field, provide a step-by-step explanation for your forecast. Explain how you calculated the total yield, how you determined the peak harvest date from the yield curve, and justify the confidence score based on the initial stage distribution.
-7.  **Return JSON:** Ensure the entire output is a single, valid JSON object.
+4.  **Provide Confidence & Notes:** Assign a confidence score. Aim for a confidence between 0.8 and 0.9 if there is a good mix of fruit stages. This score should be lower if the forecast relies heavily on early-stage items like flowers, and higher if it's based on later-stage fruits.
+5.  **Provide Reasoning:** In the 'reasoning' field, provide a step-by-step explanation for your forecast. Explain how you calculated the total yield and justify the confidence score based on the initial stage distribution.
+6.  **Return JSON:** Ensure the entire output is a single, valid JSON object.
 
 **Example Output for a Lemon Plant:**
 \`\`\`json
 {
   "totalExpectedYieldKg": 152.5,
-  "peakHarvestDate": "2024-08-15",
   "yieldCurve": [
     { "date": "2024-07-20", "yieldKg": 10.2 },
     { "date": "2024-07-27", "yieldKg": 45.8 },
@@ -62,7 +60,7 @@ Generate a JSON object that forecasts the total yield from the current generatio
   ],
   "confidence": 0.88,
   "notes": "Forecast based on a high count of immature fruit. Actual yield may vary based on weather and farm conditions.",
-  "reasoning": "The total yield was calculated by summing all 26 potential fruits and multiplying by the average weight and plant count. The confidence is 88% because a majority of the fruit is in the 'immature' stage, which has a high probability of reaching maturity. The peak harvest date of 2024-08-15 was identified as the point where the yield curve shows the largest single increase in harvestable kilograms."
+  "reasoning": "The total yield was calculated by summing all 26 potential fruits and multiplying by the average weight and plant count. The confidence is 88% because a majority of the fruit is in the 'immature' stage, which has a high probability of reaching maturity. The peak harvest date was identified as the point where the yield curve shows the largest single increase in harvestable kilograms."
 }
 \`\`\`
 

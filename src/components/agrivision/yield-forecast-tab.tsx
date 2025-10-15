@@ -8,7 +8,7 @@ import { format, parseISO } from "date-fns";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 import { formatNumber } from "@/lib/utils";
-import { CalendarCheck, Info, Package, TrendingUp, Wheat } from "lucide-react";
+import { Info, Package, TrendingUp, Wheat } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface YieldForecastTabProps {
@@ -33,7 +33,7 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
         );
     }
     
-    const { totalExpectedYieldKg, peakHarvestDate, yieldCurve, confidence, notes, reasoning } = result;
+    const { totalExpectedYieldKg, yieldCurve, confidence, notes, reasoning } = result;
 
     const chartConfig = {
         yieldKg: {
@@ -49,7 +49,7 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
 
     return (
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="font-headline text-base">{t('total_exp_yield')}</CardTitle>
@@ -58,16 +58,6 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
                     <CardContent>
                         <div className="text-3xl font-bold">{formatNumber(totalExpectedYieldKg)} kg</div>
                         <p className="text-xs text-muted-foreground">{t('total_exp_yield_desc')}</p>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="font-headline text-base">{t('peak_harvest_date')}</CardTitle>
-                        <CalendarCheck className="h-5 w-5 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold">{format(parseISO(peakHarvestDate), 'MMM dd, yyyy')}</div>
-                        <p className="text-xs text-muted-foreground">{t('peak_harvest_date_desc')}</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -147,8 +137,8 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
 function YieldForecastSkeleton() {
     return (
         <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-                {[...Array(3)].map((_, i) => (
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2">
+                {[...Array(2)].map((_, i) => (
                     <Card key={i}>
                         <CardHeader className="pb-2">
                             <Skeleton className="h-5 w-3/5" />
