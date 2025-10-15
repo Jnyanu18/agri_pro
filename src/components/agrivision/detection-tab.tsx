@@ -18,7 +18,9 @@ interface DetectionTabProps {
 const stageBG: Record<Stage, string> = {
   flower: "bg-pink-400",
   immature: "bg-green-500",
+  breaker: "bg-lime-400",
   ripening: "bg-amber-500",
+  pink: "bg-rose-400",
   mature: "bg-red-500",
 };
 
@@ -64,10 +66,12 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
 
   const { detections, stageCounts, boxes, summary } = result;
 
-  const totalFruits = stageCounts.immature + stageCounts.ripening + stageCounts.mature;
+  const totalFruits = stageCounts.immature + stageCounts.ripening + stageCounts.mature + (stageCounts.breaker || 0) + (stageCounts.pink || 0);
   const maturityDistribution = totalFruits > 0 ? [
     { stage: "immature", value: (stageCounts.immature / totalFruits) * 100, color: "bg-green-500" },
+    { stage: "breaker", value: ((stageCounts.breaker || 0) / totalFruits) * 100, color: "bg-lime-400" },
     { stage: "ripening", value: (stageCounts.ripening / totalFruits) * 100, color: "bg-amber-500" },
+    { stage: "pink", value: ((stageCounts.pink || 0) / totalFruits) * 100, color: "bg-rose-400" },
     { stage: "mature", value: (stageCounts.mature / totalFruits) * 100, color: "bg-red-500" },
   ] : [];
 
@@ -93,7 +97,7 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
           <CardContent className="space-y-4">
              {totalFruits > 0 && (
                 <div className="flex rounded-full overflow-hidden h-3">
-                {maturityDistribution.map(d => (
+                {maturityDistribution.filter(d => d.value > 0).map(d => (
                     <div key={d.stage} style={{ width: `${d.value}%` }} className={d.color}></div>
                 ))}
                 </div>
@@ -135,6 +139,8 @@ function DetectionSkeleton() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-full" />

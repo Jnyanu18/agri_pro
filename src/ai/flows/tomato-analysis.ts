@@ -24,8 +24,8 @@ const analysisPrompt = ai.definePrompt({
 You are an agricultural vision assistant. 
 Analyze this tomato plant image:
 1. Count how many tomatoes are visible.
-2. Classify each tomato into stages: flower, immature (green), ripening (orange/yellow), and mature (red).
-3. Return JSON with stage counts and a short summary.
+2. Classify each tomato into one of six stages: flower, immature (green), breaker (first sign of color), ripening (yellow/orange), pink (mostly colored but not fully red), and mature (fully red).
+3. Return JSON with counts for all six stages and a short summary.
 
 Do not include the backticks in the response.
 
@@ -44,7 +44,17 @@ const analyzeTomatoFlow = ai.defineFlow(
     if (!output) {
       throw new Error('Analysis failed: No output from model.');
     }
-    return output;
+    // Ensure all stage counts are present, defaulting to 0
+    const fullCounts = {
+      flower: 0,
+      immature: 0,
+      breaker: 0,
+      ripening: 0,
+      pink: 0,
+      mature: 0,
+      ...output.counts,
+    };
+    return { ...output, counts: fullCounts };
   }
 );
 

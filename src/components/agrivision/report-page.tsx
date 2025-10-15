@@ -63,7 +63,9 @@ export function ReportPage({
                                 <p>{detectionResult.summary}</p>
                                 <div className="flex justify-between"><span>{t('flower')}:</span> <span>{detectionResult.stageCounts.flower}</span></div>
                                 <div className="flex justify-between"><span>{t('immature')}:</span> <span>{detectionResult.stageCounts.immature}</span></div>
+                                <div className="flex justify-between"><span>{t('breaker')}:</span> <span>{detectionResult.stageCounts.breaker}</span></div>
                                 <div className="flex justify-between"><span>{t('ripening')}:</span> <span>{detectionResult.stageCounts.ripening}</span></div>
+                                <div className="flex justify-between"><span>{t('pink')}:</span> <span>{detectionResult.stageCounts.pink}</span></div>
                                 <div className="flex justify-between font-semibold"><span>{t('mature')}:</span> <span>{detectionResult.stageCounts.mature}</span></div>
                             </CardContent>
                         </Card>

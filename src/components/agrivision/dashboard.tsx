@@ -32,17 +32,22 @@ const calculateYieldForecastWithWeather = (
 ): ForecastResult => {
     const { avgWeightG, postHarvestLossPct, numPlants, forecastDays, gddBaseC, harvestCapacityKgDay } = controls;
 
-    const totalDetections = stageCounts.immature + stageCounts.ripening + stageCounts.mature;
+    const totalDetections = stageCounts.immature + stageCounts.ripening + stageCounts.mature + (stageCounts.breaker || 0) + (stageCounts.pink || 0);
     const yield_now_kg_per_plant = (stageCounts.mature * avgWeightG) / 1000;
     const yield_now_kg = yield_now_kg_per_plant * numPlants;
     const sellable_kg = yield_now_kg * (1 - postHarvestLossPct / 100);
 
     const daily: ForecastResult['daily'] = [];
+    const breakerGDD = 70;
     const ripeningGDD = 80;
+    const pinkGDD = 40;
     const maturingGDD = 55;
     
     let immatureCount = stageCounts.immature;
+    let breakerCount = stageCounts.breaker || 0;
     let ripeningCount = stageCounts.ripening;
+    let pinkCount = stageCounts.pink || 0;
+    
     let cumGDD = 0;
 
     for (let i = 0; i < Math.min(forecastDays, weatherData.length); i++) {
@@ -52,12 +57,17 @@ const calculateYieldForecastWithWeather = (
         const dailyGDD = Math.max(0, avgTemp - gddBaseC);
         cumGDD += dailyGDD;
 
-        const newRipening = immatureCount * Math.min(1, (dailyGDD / ripeningGDD));
-        const newMature = ripeningCount * Math.min(1, (dailyGDD / maturingGDD));
+        const newBreaker = immatureCount * Math.min(1, (dailyGDD / breakerGDD));
+        const newRipening = breakerCount * Math.min(1, (dailyGDD / ripeningGDD));
+        const newPink = ripeningCount * Math.min(1, (dailyGDD / pinkGDD));
+        const newMature = pinkCount * Math.min(1, (dailyGDD / maturingGDD));
         
-        immatureCount -= newRipening;
-        ripeningCount = ripeningCount - newMature + newRipening;
-        const matureCount = totalDetections - immatureCount - ripeningCount;
+        immatureCount -= newBreaker;
+        breakerCount += newBreaker - newRipening;
+        ripeningCount += newRipening - newPink;
+        pinkCount += newPink - newMature;
+        const matureCount = totalDetections - immatureCount - breakerCount - ripeningCount - pinkCount;
+
 
         daily.push({
             date: date,
@@ -172,9 +182,11 @@ export function Dashboard() {
 
             const analysis: TomatoAnalysisResult = response.data;
             
+            const totalDetections = Object.values(analysis.counts).reduce((sum, count) => sum + count, 0) - analysis.counts.flower;
+
             resolve({
               plantId: Date.now(),
-              detections: analysis.counts.immature + analysis.counts.ripening + analysis.counts.mature,
+              detections: totalDetections,
               boxes: [], 
               stageCounts: analysis.counts,
               growthStage: analysis.counts.mature > analysis.counts.immature ? 'Mature' : 'Ripening',

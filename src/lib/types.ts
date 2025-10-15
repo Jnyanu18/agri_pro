@@ -1,7 +1,7 @@
 
 import { z } from 'zod';
 
-export type Stage = 'immature' | 'ripening' | 'mature' | 'flower';
+export type Stage = 'immature' | 'ripening' | 'mature' | 'flower' | 'breaker' | 'pink';
 
 export const AppControlsSchema = z.object({
   avgWeightG: z.number(),
@@ -26,7 +26,9 @@ export interface DetectionBox {
 export const StageCountsSchema = z.object({
     flower: z.number().describe("Count of visible flowers."),
     immature: z.number().describe("Count of immature (green) tomatoes."),
-    ripening: z.number().describe("Count of ripening (orange/yellow) tomatoes."),
+    breaker: z.number().describe("Count of breaker stage tomatoes (first sign of color)."),
+    ripening: z.number().describe("Count of ripening (yellow/orange) tomatoes."),
+    pink: z.number().describe("Count of pink tomatoes (mostly colored but not fully red)."),
     mature: z.number().describe("Count of mature (red) tomatoes."),
 });
 export type StageCounts = z.infer<typeof StageCountsSchema>;
@@ -104,3 +106,10 @@ export const WeatherDataSchema = z.object({
     temp_min_c: z.number().describe('The minimum forecasted temperature in Celsius.'),
 });
 export type WeatherData = z.infer<typeof WeatherDataSchema>;
+
+export const YieldForecastingInputSchema = z.object({
+  detectionResult: TomatoAnalysisResultSchema,
+  weatherData: z.array(WeatherDataSchema),
+  controls: AppControlsSchema,
+});
+export type YieldForecastingInput = z.infer<typeof YieldForecastingInputSchema>;
