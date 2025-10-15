@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { AppControls, DetectionResult, ForecastResult } from '@/lib/types';

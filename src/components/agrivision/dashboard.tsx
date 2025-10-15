@@ -179,7 +179,7 @@ export function Dashboard() {
       </Sidebar>
       <SidebarInset className="flex flex-col print:m-0 print:min-h-fit print:shadow-none">
         <AgriVisionHeader />
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:p-6 print:hidden">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 print:hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className={isMobile ? 'grid w-full grid-cols-2' : ''}>
               {navItems.map(item => (
