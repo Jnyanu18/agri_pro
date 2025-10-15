@@ -56,7 +56,7 @@ export function SidebarControls({
     { key: 'avgWeightG', label: t('avg_fruit_weight'), type: 'slider', unit: 'g', min: 50, max: 150, step: 1 },
     { key: 'postHarvestLossPct', label: t('post_harvest_loss'), type: 'slider', unit: '%', min: 0, max: 30, step: 1 },
     { key: 'numPlants', label: t('num_plants'), type: 'input', unit: '', min: 1, max: 1000, step: 1 },
-    { key: 'forecastHorizon', label: t('forecast_horizon'), type: 'input', unit: 'days', min: 1, max: 30, step: 1 },
+    { key: 'forecastDays', label: t('forecast_horizon'), type: 'input', unit: 'days', min: 1, max: 30, step: 1 },
     { key: 'harvestCapacityKgDay', label: t('harvest_capacity'), type: 'input', unit: 'kg/day', min: 1, max: 500, step: 5 },
     { key: 'gddBaseC', label: t('gdd_base'), type: 'input', unit: '°C', min: 5, max: 15, step: 1 },
   ]
