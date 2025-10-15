@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function HomePage() {
     const { user, isUserLoading } = useUser();
@@ -44,7 +45,7 @@ export default function HomePage() {
             <Leaf className="h-6 w-6 text-primary" />
             <span className="font-headline font-bold">AgriVisionAI</span>
           </Link>
-          <div className="flex flex-1 items-center justify-end space-x-4">
+          <div className="flex flex-1 items-center justify-end space-x-2">
              <nav className="flex items-center space-x-2">
                 {isUserLoading ? null : user ? (
                     <>
@@ -67,6 +68,7 @@ export default function HomePage() {
                     </>
                 )}
             </nav>
+            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -123,11 +125,11 @@ export default function HomePage() {
         <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
             <div className="flex items-center gap-2">
                  <Leaf className="h-5 w-5 text-primary" />
-                <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-                    Built by Firebase Studio.
+                <p className="text-center text-sm text-muted-foreground md:text-left">
+                    © {new Date().getFullYear()} AgriVisionAI. All Rights Reserved.
                 </p>
             </div>
-           <p className="text-center text-sm text-muted-foreground">© {new Date().getFullYear()} AgriVisionAI. All Rights Reserved.</p>
+           <p className="text-center text-sm text-muted-foreground"></p>
         </div>
       </footer>
     </div>
