@@ -4,7 +4,7 @@ import { Leaf, LogOut } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '../ui/button';
-import { BookText, Info } from 'lucide-react';
+import { BookText, Download, Info } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -27,8 +27,12 @@ export function AgriVisionHeader() {
     router.push('/login');
   };
 
+  const handlePrint = () => {
+    window.print();
+  }
+
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6 print:hidden">
        <div className="md:hidden">
           <SidebarTrigger />
         </div>
@@ -39,11 +43,14 @@ export function AgriVisionHeader() {
         </h1>
       </div>
       <div className="ml-auto flex items-center gap-2">
+         <Button variant="outline" size="sm" onClick={handlePrint}>
+            <Download className="mr-2 h-4 w-4" />
+            Download Report
+        </Button>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <BookText className="mr-2 h-4 w-4" />
-              Report
+            <Button variant="ghost" size="icon" className="hidden">
+              <BookText className="h-4 w-4" />
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
@@ -104,7 +111,7 @@ export function AgriVisionHeader() {
                         <h3 className="font-headline text-lg font-semibold text-foreground">6. Firebase Integration</h3>
                         <ul className="list-disc pl-5 space-y-1">
                             <li><span className="font-semibold">User Management:</span> Firebase Authentication handles the entire user lifecycle.</li>
-                            <li><span className="font-semibold">Security:</span> The app uses standard Firebase client-side SDK practices, with security enforced by Firestore Security Rules.</li>
+                            <li><span className="font-semibold">Security:</span> The app uses standard Firebase client-side practices, with security enforced by Firestore Security Rules.</li>
                         </ul>
                     </div>
                 </div>

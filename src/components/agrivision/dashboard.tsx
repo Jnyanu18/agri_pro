@@ -13,12 +13,13 @@ import { DetectionTab } from '@/components/agrivision/detection-tab';
 import { ForecastTab } from '@/components/agrivision/forecast-tab';
 import { MarketTab } from '@/components/agrivision/market-tab';
 import { ChatTab } from '@/components/agrivision/chat-tab';
-import { calculateYieldForecast, mockTomatoDetection } from '@/lib/mock-data';
+import { calculateYieldForecast } from '@/lib/mock-data';
 import type { MarketPriceForecastingOutput } from '@/ai/flows/market-price-forecasting';
 import { useToast } from '@/hooks/use-toast';
 import { runTomatoAnalysis, runAIForecast } from '@/app/actions';
 import { dataURLtoFile } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ReportPage } from './report-page';
 
 
 export function Dashboard() {
@@ -84,6 +85,9 @@ export function Dashboard() {
 
             if (!response.success || !response.data) {
                 let errorMessage = response.error || 'An unknown error occurred during analysis.';
+                if (errorMessage.includes('API key not valid')) {
+                    errorMessage = 'Your Gemini API key is not valid. Please check your .env file.';
+                }
                 throw new Error(errorMessage);
             }
 
@@ -164,8 +168,8 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-      <Sidebar variant="inset" side="left" collapsible="icon" className="group/sidebar">
+    <div className="flex min-h-screen w-full flex-col bg-muted/40 print:bg-white">
+      <Sidebar variant="inset" side="left" collapsible="icon" className="group/sidebar print:hidden">
         <SidebarHeader>
            <h2 className="font-headline text-xl font-semibold text-primary">AgriVisionAI</h2>
         </SidebarHeader>
@@ -173,9 +177,9 @@ export function Dashboard() {
            <SidebarControls controls={controls} setControls={setControls} onImageUpload={handleImageUpload} onAnalyze={handleAnalysis} isLoading={isLoading} />
         </SidebarContent>
       </Sidebar>
-      <SidebarInset className="flex flex-col">
+      <SidebarInset className="flex flex-col print:m-0 print:min-h-fit print:shadow-none">
         <AgriVisionHeader />
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:p-6 print:hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className={isMobile ? 'grid w-full grid-cols-2' : ''}>
               {navItems.map(item => (
@@ -207,6 +211,13 @@ export function Dashboard() {
             </TabsContent>
           </Tabs>
         </main>
+        <ReportPage
+            imageUrl={image.url}
+            detectionResult={detectionResult}
+            forecastResult={forecastResult}
+            marketResult={marketResult}
+            controls={controls}
+        />
       </SidebarInset>
     </div>
   );

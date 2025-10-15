@@ -83,3 +83,39 @@
     min-height: 100vh;
   }
 }
+
+@layer utilities {
+    @media print {
+        .print\:hidden {
+            display: none;
+        }
+        .print\:block {
+            display: block;
+        }
+        .print\:relative {
+            position: relative;
+        }
+        .print\:z-auto {
+            z-index: auto;
+        }
+        .print\:m-0 {
+            margin: 0;
+        }
+        .print\:p-0 {
+            padding: 0;
+        }
+        .print\:shadow-none {
+            box-shadow: none;
+        }
+        .print\:bg-white {
+            background-color: #fff;
+        }
+        .print\:min-h-fit {
+            min-height: fit-content;
+        }
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+    }
+}
