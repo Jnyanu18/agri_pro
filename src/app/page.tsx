@@ -75,7 +75,7 @@ export default function HomePage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative py-20 md:py-32 lg:py-40">
+        <section className="relative py-20 md:py-32 lg:py-40 group">
            <div
             aria-hidden="true"
             className="absolute inset-0 grid grid-cols-2 -space-x-52 opacity-40 transition-opacity duration-500 group-hover:opacity-100 dark:opacity-20"
@@ -110,7 +110,7 @@ export default function HomePage() {
 
             <div className="mt-16 grid gap-8 md:grid-cols-1 lg:grid-cols-3">
               {features.map((feature, index) => (
-                <div key={index} className="rounded-lg border bg-card p-6 text-center shadow-sm">
+                <div key={index} className="rounded-lg border bg-card p-6 text-center shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                     {feature.icon}
                     <h3 className="mt-4 font-headline text-xl font-semibold">{feature.title}</h3>
                     <p className="mt-2 text-sm text-muted-foreground">{feature.description}</p>
