@@ -44,7 +44,7 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
 
     const formattedYieldCurve = yieldCurve.map(d => ({
         ...d,
-        date: parseISO(d.date),
+        date: parseISO(d.date).getTime(),
     }));
 
     return (
@@ -94,7 +94,7 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis 
                                     dataKey="date" 
-                                    tickFormatter={(value) => format(value, 'MMM dd')}
+                                    tickFormatter={(value) => format(new Date(value), 'MMM dd')}
                                     type="number"
                                     scale="time"
                                     domain={['dataMin', 'dataMax']}
@@ -106,7 +106,7 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
                                         <ChartTooltipContent
                                             formatter={(value, name, props) => (
                                                 <div className="flex flex-col">
-                                                    <span>{format(props.payload.date, 'MMM dd, yyyy')}</span>
+                                                    <span>{format(new Date(props.payload.date), 'MMM dd, yyyy')}</span>
                                                     <span className="font-bold">{`${formatNumber(value as number)} kg`}</span>
                                                 </div>
                                             )}

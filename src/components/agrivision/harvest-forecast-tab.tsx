@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import type { ForecastResult } from '@/lib/types';
@@ -45,7 +44,7 @@ export function HarvestForecastTab({ result, isLoading }: HarvestForecastTabProp
   
   const formattedDaily = daily.map(d => ({
     ...d,
-    date: parseISO(d.date),
+    date: parseISO(d.date).getTime(),
   }));
 
   const totalHarvest = harvest_plan.reduce((a, b) => a + b.harvest_kg, 0);
@@ -118,7 +117,7 @@ export function HarvestForecastTab({ result, isLoading }: HarvestForecastTabProp
                 <CartesianGrid strokeDasharray="3 3" />
                  <XAxis 
                     dataKey="date" 
-                    tickFormatter={(value) => format(value, 'MMM dd')}
+                    tickFormatter={(value) => format(new Date(value), 'MMM dd')}
                     type="number"
                     scale="time"
                     domain={['dataMin', 'dataMax']}
