@@ -124,6 +124,7 @@ export const YieldForecastOutputSchema = z.object({
   })).describe("An array of data points representing the yield curve over time."),
   confidence: z.number().min(0).max(1).describe("A confidence score (0 to 1) for the forecast."),
   notes: z.string().describe("A brief summary and any important notes about the forecast."),
+  reasoning: z.string().describe("A step-by-step explanation of how the forecast was calculated, including the basis for the confidence score and peak harvest date."),
 });
 export type YieldForecastOutput = z.infer<typeof YieldForecastOutputSchema>;
 

@@ -8,7 +8,7 @@ import { format, parseISO } from "date-fns";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 import { formatNumber } from "@/lib/utils";
-import { CalendarCheck, Package, TrendingUp, Wheat } from "lucide-react";
+import { CalendarCheck, Info, Package, TrendingUp, Wheat } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface YieldForecastTabProps {
@@ -33,7 +33,7 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
         );
     }
     
-    const { totalExpectedYieldKg, peakHarvestDate, yieldCurve, confidence, notes } = result;
+    const { totalExpectedYieldKg, peakHarvestDate, yieldCurve, confidence, notes, reasoning } = result;
 
     const chartConfig = {
         yieldKg: {
@@ -82,7 +82,7 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
                 </Card>
             </div>
             
-            <div className="grid gap-4 md:grid-cols-1">
+            <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <CardTitle className="font-headline">{t('yield_curve_forecast')}</CardTitle>
@@ -126,6 +126,18 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
                         </ChartContainer>
                     </CardContent>
                 </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline flex items-center gap-2">
+                            <Info className="h-5 w-5" />
+                            {t('ai_reasoning_title')}
+                        </CardTitle>
+                        <CardDescription>{t('ai_reasoning_desc')}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground space-y-4">
+                        <p>{reasoning}</p>
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
@@ -148,7 +160,7 @@ function YieldForecastSkeleton() {
                     </Card>
                 ))}
             </div>
-            <div className="grid gap-4 md:grid-cols-1">
+            <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader>
                         <Skeleton className="h-6 w-1/2" />
@@ -158,8 +170,16 @@ function YieldForecastSkeleton() {
                         <Skeleton className="h-[400px] w-full" />
                     </CardContent>
                 </Card>
+                 <Card>
+                    <CardHeader>
+                        <Skeleton className="h-6 w-1/2" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </CardHeader>
+                    <CardContent>
+                        <Skeleton className="h-20 w-full" />
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );
 }
-
