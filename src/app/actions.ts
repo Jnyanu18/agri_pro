@@ -13,8 +13,7 @@ import {
   analyzePlant,
   type AnalyzePlantInput,
 } from '@/ai/flows/plant-analysis';
-import { runWeatherForYield, type WeatherForYieldInput } from '@/ai/flows/yield-forecasting';
-import { WeatherData } from '@/lib/types';
+import { forecastYield, type YieldForecastInput, type YieldForecastOutput } from '@/ai/flows/yield-forecasting';
 
 export async function runMarketPriceForecasting(
   input: MarketPriceForecastingInput
@@ -56,9 +55,9 @@ export async function runPlantAnalysis(input: AnalyzePlantInput) {
   }
 }
 
-export async function runAIForecast(input: WeatherForYieldInput): Promise<{ success: boolean, data?: WeatherData[], error?: string }> {
+export async function runYieldForecast(input: YieldForecastInput): Promise<{ success: boolean, data?: YieldForecastOutput, error?: string }> {
     try {
-        const result = await runWeatherForYield(input);
+        const result = await forecastYield(input);
         return { success: true, data: result };
     } catch (error) {
         console.error('Error in yield forecasting flow:', error);

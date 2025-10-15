@@ -10,15 +10,15 @@ import { BarChart as BarChartIcon, CalendarDays, PackageCheck, Shovel, Trees } f
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Skeleton } from '../ui/skeleton';
 import { formatNumber } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 
-interface ForecastTabProps {
+interface HarvestForecastTabProps {
   result: ForecastResult | null;
   isLoading: boolean;
 }
 
-export function ForecastTab({ result, isLoading }: ForecastTabProps) {
+export function HarvestForecastTab({ result, isLoading }: HarvestForecastTabProps) {
   const { t } = useTranslation();
   if (isLoading) {
     return <ForecastSkeleton />;
@@ -29,7 +29,7 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
       <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center h-[50vh]">
         <BarChartIcon className="h-16 w-16 text-muted-foreground" />
         <h3 className="font-headline text-xl font-semibold">{t('no_forecast_data_title')}</h3>
-        <p className="text-muted-foreground">{t('no_forecast_data_desc')}</p>
+        <p className="text-muted-foreground">{t('run_analysis_to_see_forecast')}</p>
       </div>
     );
   }
@@ -42,6 +42,11 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
       color: 'hsl(var(--primary))',
     },
   };
+  
+  const formattedDaily = daily.map(d => ({
+    ...d,
+    date: parseISO(d.date),
+  }));
 
   const totalHarvest = harvest_plan.reduce((a, b) => a + b.harvest_kg, 0);
 
@@ -77,7 +82,7 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
                 {harvestWindow ? (
                 <>
                     <div className="text-xl font-bold">
-                        {format(new Date(harvestWindow.start), 'MMM d')} - {format(new Date(harvestWindow.end), 'MMM d')}
+                        {format(parseISO(harvestWindow.start), 'MMM d')} - {format(parseISO(harvestWindow.end), 'MMM d')}
                     </div>
                     <p className="text-xs text-muted-foreground">{t('harvest_window_desc')}</p>
                 </>
@@ -109,9 +114,15 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <AreaChart data={daily} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+              <AreaChart data={formattedDaily} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
+                 <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(value) => format(value, 'MMM dd')}
+                    type="number"
+                    scale="time"
+                    domain={['dataMin', 'dataMax']}
+                />
                 <YAxis unit="kg" />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Area type="monotone" dataKey="ready_kg" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} name={t('ready_kg')}/>
@@ -136,7 +147,7 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
               <TableBody>
                 {harvest_plan.length > 0 ? harvest_plan.map(item => (
                   <TableRow key={item.date}>
-                    <TableCell>{new Date(item.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</TableCell>
+                    <TableCell>{format(parseISO(item.date), 'EEE, MMM d')}</TableCell>
                     <TableCell className="text-right font-medium">{formatNumber(item.harvest_kg)}</TableCell>
                   </TableRow>
                 )) : (
@@ -164,7 +175,7 @@ function ForecastSkeleton() {
             </CardHeader>
             <CardContent>
               <Skeleton className="h-8 w-1/2 mb-2" />
-               <Skeleton className="h-4 w-3/4" />
+               <Skeleton className="h-3 w-3/4" />
             </CardContent>
           </Card>
         ))}

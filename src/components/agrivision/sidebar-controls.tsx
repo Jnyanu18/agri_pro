@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, UploadCloud } from 'lucide-react'
+import { Loader2, UploadCloud, Wheat } from 'lucide-react'
 import { Slider } from '../ui/slider'
 import { useTranslation } from 'react-i18next'
 
@@ -17,7 +17,10 @@ interface SidebarControlsProps {
   setControls: React.Dispatch<React.SetStateAction<AppControls>>
   onImageUpload: (file: File) => void
   onAnalyze: () => void
-  isLoading: boolean
+  onYieldForecast: () => void;
+  isAnalysisLoading: boolean
+  isForecastLoading: boolean;
+  isYieldForecastDisabled: boolean;
 }
 
 export function SidebarControls({
@@ -25,7 +28,10 @@ export function SidebarControls({
   setControls,
   onImageUpload,
   onAnalyze,
-  isLoading,
+  onYieldForecast,
+  isAnalysisLoading,
+  isForecastLoading,
+  isYieldForecastDisabled,
 }: SidebarControlsProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { t } = useTranslation()
@@ -53,12 +59,11 @@ export function SidebarControls({
     max: number;
     step: number;
   }[] = [
-    { key: 'avgWeightG', label: t('avg_fruit_weight'), type: 'slider', unit: 'g', min: 50, max: 150, step: 1 },
+    { key: 'avgWeightG', label: t('avg_fruit_weight'), type: 'slider', unit: 'g', min: 50, max: 250, step: 5 },
     { key: 'postHarvestLossPct', label: t('post_harvest_loss'), type: 'slider', unit: '%', min: 0, max: 30, step: 1 },
-    { key: 'numPlants', label: t('num_plants'), type: 'input', unit: '', min: 1, max: 1000, step: 1 },
-    { key: 'forecastDays', label: t('forecast_horizon'), type: 'input', unit: 'days', min: 1, max: 30, step: 1 },
-    { key: 'harvestCapacityKgDay', label: t('harvest_capacity'), type: 'input', unit: 'kg/day', min: 1, max: 500, step: 5 },
-    { key: 'gddBaseC', label: t('gdd_base'), type: 'input', unit: '°C', min: 5, max: 15, step: 1 },
+    { key: 'numPlants', label: t('num_plants'), type: 'input', unit: '', min: 1, max: 10000, step: 10 },
+    { key: 'forecastDays', label: t('forecast_horizon'), type: 'input', unit: 'days', min: 7, max: 90, step: 1 },
+    { key: 'harvestCapacityKgDay', label: t('harvest_capacity'), type: 'input', unit: 'kg/day', min: 1, max: 1000, step: 10 },
   ]
   
   return (
@@ -98,7 +103,7 @@ export function SidebarControls({
                 id={item.key}
                 type="number"
                 value={String(controls[item.key as keyof AppControls])}
-                onChange={e => handleInputChange(item.key, e.target.valueAsNumber)}
+                onChange={e => handleInputChange(item.key, e.target.valueAsNumber || 0)}
                 min={item.min}
                 max={item.max}
                 step={item.step}
@@ -119,20 +124,16 @@ export function SidebarControls({
                     className="w-2/3"
                 />
             </div>
-            <div className="flex items-center justify-between">
-                <Label htmlFor="use-live-weather" className="flex flex-col gap-1">
-                  <span>{t('use_live_weather')}</span>
-                  <span className="text-xs font-light text-muted-foreground">{t('use_live_weather_desc')}</span>
-                </Label>
-                <Switch id="use-live-weather" checked={controls.useLiveWeather} onCheckedChange={(val) => handleInputChange('useLiveWeather', val)} />
-            </div>
         </div>
 
       </div>
 
-      <div className="mt-auto">
-        <Button onClick={onAnalyze} className="w-full" disabled={isLoading}>
-          {isLoading ? <Loader2 className="animate-spin" /> : t('analyze_forecast')}
+      <div className="mt-auto space-y-2">
+         <Button onClick={onYieldForecast} className="w-full" disabled={isForecastLoading || isYieldForecastDisabled} variant="secondary">
+          {isForecastLoading ? <Loader2 className="animate-spin" /> : <><Wheat className="mr-2 h-4 w-4" /> {t('run_yield_forecast')}</>}
+        </Button>
+        <Button onClick={onAnalyze} className="w-full" disabled={isAnalysisLoading}>
+          {isAnalysisLoading ? <Loader2 className="animate-spin" /> : t('analyze_harvest')}
         </Button>
       </div>
     </div>
