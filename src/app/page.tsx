@@ -80,8 +80,8 @@ export default function HomePage() {
             aria-hidden="true"
             className="absolute inset-0 grid grid-cols-2 -space-x-52 opacity-40 transition-opacity duration-500 group-hover:opacity-100 dark:opacity-20"
           >
-            <div className="h-56 bg-gradient-to-br from-primary to-green-300 blur-[106px] dark:from-primary/70"></div>
-            <div className="h-32 bg-gradient-to-r from-emerald-400 to-lime-300 blur-[106px] dark:to-lime-500"></div>
+            <div className="h-56 bg-gradient-to-br from-primary to-cyan-300 blur-[106px] dark:from-primary/70"></div>
+            <div className="h-32 bg-gradient-to-r from-sky-400 to-indigo-300 blur-[106px] dark:to-indigo-500"></div>
           </div>
           <div className="container relative text-center">
             <h1 className="font-headline text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
