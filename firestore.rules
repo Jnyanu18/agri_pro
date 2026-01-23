@@ -84,7 +84,7 @@ service cloud.firestore {
      */
     match /plants/{plantId} {
       allow get: if isOwner(resource.data.uid);
-      allow list: if isOwner(request.auth.uid);
+      allow list: if false;
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
       allow update: if isExistingOwner(resource.data.uid) && (request.resource.data.uid == resource.data.uid);
       allow delete: if isExistingOwner(resource.data.uid);
@@ -103,7 +103,7 @@ service cloud.firestore {
      */
     match /feedback/{feedbackId} {
       allow get: if isOwner(resource.data.uid);
-      allow list: if isOwner(request.auth.uid);
+      allow list: if false;
       allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
       allow update: if isExistingOwner(resource.data.uid) && (request.resource.data.uid == resource.data.uid);
       allow delete: if isExistingOwner(resource.data.uid);
