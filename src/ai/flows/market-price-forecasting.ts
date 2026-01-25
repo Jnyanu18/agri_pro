@@ -85,6 +85,9 @@ Ensure the output is valid JSON and includes the best date and price.
     });
 
     const result = await prompt(input);
-    return result.output!;
+    if (!result.output) {
+      throw new Error("The AI model failed to generate a market price forecast.");
+    }
+    return result.output;
   }
 );

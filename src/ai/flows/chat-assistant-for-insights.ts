@@ -75,6 +75,9 @@ const chatAssistantForInsightsFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    if (!output) {
+      throw new Error("The AI assistant failed to generate a reply.");
+    }
+    return output;
   }
 );
