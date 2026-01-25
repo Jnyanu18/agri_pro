@@ -3,8 +3,7 @@
 
 import type { ChatAssistantForInsightsInput } from '@/ai/flows/chat-assistant-for-insights';
 import type { MarketPriceForecastingInput, MarketPriceForecastingOutput } from '@/ai/flows/market-price-forecasting';
-import type { AnalyzePlantInput, PlantAnalysisResult } from '@/ai/flows/plant-analysis';
-import type { YieldForecastInput, YieldForecastOutput } from '@/ai/flows/yield-forecasting';
+import type { AnalyzePlantInput, PlantAnalysisResult, YieldForecastInput, YieldForecastOutput } from '@/lib/types';
 
 // IMPORTANT: This base URL needs to be configured for production.
 // In a Vercel environment, process.env.VERCEL_URL will be set automatically.
