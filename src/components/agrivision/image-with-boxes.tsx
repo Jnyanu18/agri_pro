@@ -8,10 +8,16 @@ interface ImageWithBoxesProps {
   boxes: DetectionBox[];
 }
 
-const stageColors: Record<DetectionBox['stage'], string> = {
-  immature: 'border-green-400',
-  ripening: 'border-yellow-400',
-  mature: 'border-red-500',
+const stageColors: Record<string, string> = {
+  flower: "border-pink-400",
+  fruitlet: "border-yellow-300",
+  immature: "border-green-400",
+  breaker: "border-lime-400",
+  ripening: "border-amber-400",
+  pink: "border-rose-400",
+  mature: "border-red-500",
+  overripened: "border-purple-500",
+  default: "border-slate-300",
 };
 
 export function ImageWithBoxes({ imageUrl, boxes }: ImageWithBoxesProps) {
@@ -30,7 +36,7 @@ export function ImageWithBoxes({ imageUrl, boxes }: ImageWithBoxesProps) {
         return (
           <div
             key={index}
-            className={`absolute border-2 ${stageColors[item.stage]}`}
+            className={`absolute border-2 ${stageColors[item.stage] || stageColors.default}`}
             style={{
               left: `${x1 * 100}%`,
               top: `${y1 * 100}%`,

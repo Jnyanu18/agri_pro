@@ -26,11 +26,13 @@ export function ForecastTab({ result, isLoading }: ForecastTabProps) {
 
   if (!result) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center h-[50vh]">
-        <BarChartIcon className="h-16 w-16 text-muted-foreground" />
-        <h3 className="font-headline text-xl font-semibold">{t('no_forecast_data_title')}</h3>
-        <p className="text-muted-foreground">{t('no_forecast_data_desc')}</p>
-      </div>
+      <Card>
+        <CardContent className="flex h-[50vh] flex-col items-center justify-center gap-4 p-12 text-center">
+          <BarChartIcon className="h-16 w-16 text-muted-foreground" />
+          <h3 className="font-headline text-xl font-semibold">{t('no_forecast_data_title')}</h3>
+          <p className="text-muted-foreground">{t('no_forecast_data_desc')}</p>
+        </CardContent>
+      </Card>
     );
   }
 

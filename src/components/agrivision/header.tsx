@@ -2,11 +2,9 @@
 
 "use client";
 
-import { Leaf, LogOut, Globe } from 'lucide-react';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Download, Globe, Leaf, LogOut, Search, UserRound } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '../ui/button';
-import { BookText, Download } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -43,26 +41,32 @@ export function AgriVisionHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 print:hidden">
-       <div className="md:hidden">
-          <SidebarTrigger />
-        </div>
-      <div className="flex items-center gap-2">
+    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur print:hidden">
+      <div className="mx-auto flex h-12 max-w-5xl items-center gap-3 px-4">
+        <div className="flex items-center gap-2">
         <Leaf className="h-6 w-6 text-primary" />
-        <h1 className="font-headline text-2xl font-bold tracking-tight">
-          {t('agrivision_ai')}
-        </h1>
+        <h1 className="font-headline text-base font-semibold tracking-tight">{t('agrivision_ai')}</h1>
       </div>
-      <div className="ml-auto flex items-center gap-2">
-         <Button variant="outline" size="sm" onClick={handlePrint}>
-            <Download className="mr-2 h-4 w-4" />
-            {t('download_report')}
+
+      <div className="ml-auto flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => window.dispatchEvent(new Event("agrivision:quickactions"))}
+          aria-label="Quick actions"
+          title="Quick actions (Ctrl/Cmd + K)"
+        >
+          <Search className="h-5 w-5" />
         </Button>
+
+        <Button variant="ghost" size="sm" onClick={handlePrint} className="h-9 px-3">
+          <Download className="mr-2 h-4 w-4" />
+          {t('download_report')}
+        </Button>
+
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="hidden">
-              <BookText className="h-4 w-4" />
-            </Button>
+            <span className="hidden" />
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
@@ -129,6 +133,7 @@ export function AgriVisionHeader() {
             </ScrollArea>
           </DialogContent>
         </Dialog>
+
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -148,11 +153,23 @@ export function AgriVisionHeader() {
                 ))}
             </DropdownMenuContent>
         </DropdownMenu>
+
         <ThemeToggle />
-        <Button variant="ghost" size="icon" onClick={handleLogout} aria-label={t('logout')}>
-          <LogOut className="h-5 w-5" />
-          <span className="sr-only">{t('logout')}</span>
-        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label="Profile menu">
+              <UserRound className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
+              {t('logout')}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       </div>
     </header>
   );

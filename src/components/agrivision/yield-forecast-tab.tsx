@@ -3,13 +3,16 @@
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { YieldForecastOutput } from "@/ai/flows/yield-forecasting";
+import type { YieldForecastOutput } from "@/lib/types";
 import { format, parseISO } from "date-fns";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "../ui/chart";
 import { formatNumber } from "@/lib/utils";
-import { Info, Package, TrendingUp, Wheat } from "lucide-react";
+import { ChevronDown, Info, Package, TrendingUp, Wheat } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface YieldForecastTabProps {
     result: YieldForecastOutput | null;
@@ -18,6 +21,7 @@ interface YieldForecastTabProps {
 
 export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
     const { t } = useTranslation();
+    const [isReasoningOpen, setIsReasoningOpen] = useState(false);
 
     if (isLoading) {
         return <YieldForecastSkeleton />;
@@ -25,11 +29,13 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
 
     if (!result) {
         return (
-            <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center h-[50vh]">
-                <Wheat className="h-16 w-16 text-muted-foreground" />
-                <h3 className="font-headline text-xl font-semibold">{t('no_yield_data_title')}</h3>
-                <p className="text-muted-foreground">{t('no_yield_data_desc')}</p>
-            </div>
+            <Card>
+                <CardContent className="flex h-[50vh] flex-col items-center justify-center gap-4 p-12 text-center">
+                    <Wheat className="h-16 w-16 text-muted-foreground" />
+                    <h3 className="font-headline text-xl font-semibold">{t('no_yield_data_title')}</h3>
+                    <p className="text-muted-foreground">{t('no_yield_data_desc')}</p>
+                </CardContent>
+            </Card>
         );
     }
     
@@ -56,7 +62,7 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
                         <Package className="h-5 w-5 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{formatNumber(totalExpectedYieldKg)} kg</div>
+                        <div className="font-headline text-3xl font-semibold tabular-nums">{formatNumber(totalExpectedYieldKg)} kg</div>
                         <p className="text-xs text-muted-foreground">{t('total_exp_yield_desc')}</p>
                     </CardContent>
                 </Card>
@@ -66,7 +72,7 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
                         <TrendingUp className="h-5 w-5 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-bold">{(confidence * 100).toFixed(0)}%</div>
+                        <div className="font-headline text-3xl font-semibold tabular-nums">{(confidence * 100).toFixed(0)}%</div>
                         <p className="text-xs text-muted-foreground">{t('forecast_confidence_desc')}</p>
                     </CardContent>
                 </Card>
@@ -81,15 +87,17 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
                     <CardContent>
                         <ChartContainer config={chartConfig} className="h-[400px] w-full">
                             <AreaChart data={formattedYieldCurve} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" />
+                                <CartesianGrid vertical={false} strokeDasharray="4 4" />
                                 <XAxis 
                                     dataKey="date" 
                                     tickFormatter={(value) => format(new Date(value), 'MMM dd')}
                                     type="number"
                                     scale="time"
                                     domain={['dataMin', 'dataMax']}
+                                    tickLine={false}
+                                    axisLine={false}
                                 />
-                                <YAxis unit="kg" />
+                                <YAxis unit="kg" tickLine={false} axisLine={false} width={36} />
                                 <ChartTooltip 
                                     cursor={false}
                                     content={
@@ -124,8 +132,21 @@ export function YieldForecastTab({ result, isLoading }: YieldForecastTabProps) {
                         </CardTitle>
                         <CardDescription>{t('ai_reasoning_desc')}</CardDescription>
                     </CardHeader>
-                    <CardContent className="text-sm text-muted-foreground space-y-4">
-                        <p>{reasoning}</p>
+                    <CardContent className="space-y-3 text-sm text-muted-foreground">
+                        <Collapsible open={isReasoningOpen} onOpenChange={setIsReasoningOpen}>
+                            <div className="flex items-center justify-between">
+                                <div className="text-xs text-muted-foreground">How AI calculated this</div>
+                                <CollapsibleTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 px-2">
+                                        {isReasoningOpen ? "Hide" : "Show"}
+                                        <ChevronDown className={isReasoningOpen ? "rotate-180 transition-transform" : "transition-transform"} />
+                                    </Button>
+                                </CollapsibleTrigger>
+                            </div>
+                            <CollapsibleContent className="mt-3 rounded-xl bg-muted p-4 text-sm text-muted-foreground ring-1 ring-border/60">
+                                <p className="whitespace-pre-wrap leading-relaxed">{reasoning}</p>
+                            </CollapsibleContent>
+                        </Collapsible>
                     </CardContent>
                 </Card>
             </div>

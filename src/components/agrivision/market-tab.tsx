@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Line, LineChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { Line, LineChart, CartesianGrid, ReferenceLine, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { formatNumber } from '@/lib/utils';
 import { CalendarCheck, DollarSign, LineChart as LineChartIcon, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -65,7 +65,7 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
   }
 
   const chartConfig = {
-    price: { label: 'Price (₹/kg)', color: 'hsl(var(--primary))' },
+    price: { label: 'Price (INR/kg)', color: 'hsl(var(--primary))' },
   };
   
   const expectedRevenue = result ? sellableKg * result.bestPrice : 0;
@@ -130,14 +130,14 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
                      <div className="flex items-start justify-between">
                         <div className="text-sm">
                             <div className="text-muted-foreground">{t('est_price')}</div>
-                            <div className="font-bold text-lg">₹{formatNumber(result.bestPrice)} / kg</div>
+                            <div className="font-bold text-lg tabular-nums">INR {formatNumber(result.bestPrice, 2)} / kg</div>
                         </div>
                         <TrendingUp className="w-8 h-8 text-primary"/>
                     </div>
                      <div className="flex items-start justify-between">
                         <div className="text-sm">
                             <div className="text-muted-foreground">{t('expected_revenue')}</div>
-                            <div className="font-bold text-lg">₹{formatNumber(expectedRevenue)}</div>
+                            <div className="font-bold text-lg tabular-nums">INR {formatNumber(expectedRevenue, 0)}</div>
                         </div>
                         <DollarSign className="w-8 h-8 text-primary"/>
                     </div>
@@ -156,18 +156,32 @@ export function MarketTab({ sellableKg, district, onMarketResultChange }: Market
           <CardContent>
             {isLoading ? <Skeleton className="h-[400px] w-full" /> : 
             !result ? (
-                <div className="flex flex-col h-[400px] items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center">
-                    <LineChartIcon className="h-16 w-16 text-muted-foreground" />
-                    <h3 className="font-headline text-xl font-semibold">{t('no_price_data')}</h3>
-                    <p className="text-muted-foreground">{t('no_price_data_desc')}</p>
+                <div className="flex h-[400px] items-center justify-center">
+                  <div className="mx-auto w-full max-w-md">
+                    <Card className="bg-card/60">
+                      <CardContent className="flex flex-col items-center justify-center gap-4 p-10 text-center">
+                        <LineChartIcon className="h-12 w-12 text-muted-foreground" />
+                        <div>
+                          <h3 className="font-headline text-xl font-semibold">{t('no_price_data')}</h3>
+                          <p className="mt-1 text-muted-foreground">{t('no_price_data_desc')}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
             ) : (
               <ChartContainer config={chartConfig} className="h-[400px] w-full">
                 <LineChart data={result.forecast} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid vertical={false} strokeDasharray="4 4" />
                   <XAxis dataKey="date" tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} />
-                  <YAxis tickFormatter={(value) => `₹${value}`} />
+                  <YAxis tickFormatter={(value) => `INR ${value}`} />
                   <ChartTooltip content={<ChartTooltipContent />} />
+                  <ReferenceLine
+                    x={result.bestDate}
+                    stroke="hsl(var(--primary))"
+                    strokeOpacity={0.35}
+                    strokeDasharray="4 4"
+                  />
                   <Line type="monotone" dataKey="price" stroke="hsl(var(--primary))" strokeWidth={2} name="Price" dot={false} />
                 </LineChart>
               </ChartContainer>

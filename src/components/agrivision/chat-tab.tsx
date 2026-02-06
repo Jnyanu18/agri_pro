@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import type { MarketPriceForecastingOutput } from '@/ai/flows/market-price-forecasting';
 import type { AppControls, DetectionResult, ForecastResult } from '@/lib/types';
 import { useTranslation } from 'react-i18next';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface ChatTabProps {
   appState: {
@@ -32,6 +33,12 @@ export function ChatTab({ appState, chatHistory, setChatHistory }: ChatTabProps)
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+
+  const suggestions = [
+    "When should I harvest for best profit?",
+    "How can I increase yield this week?",
+    "What risks should I watch for?",
+  ];
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -71,15 +78,33 @@ export function ChatTab({ appState, chatHistory, setChatHistory }: ChatTabProps)
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-16rem)]">
+    <div className="flex min-h-[60vh] flex-col md:h-[calc(100vh-16rem)]">
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-6">
           {chatHistory.length === 0 ? (
-             <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center h-full">
-                <Sparkles className="h-16 w-16 text-muted-foreground" />
-                <h3 className="font-headline text-xl font-semibold">{t('ai_assistant_title')}</h3>
-                <p className="text-muted-foreground">{t('ai_assistant_desc')}</p>
-            </div>
+            <Card className="mx-auto w-full max-w-2xl">
+              <CardContent className="flex flex-col items-center justify-center gap-4 p-10 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-border/60">
+                  <Sparkles className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-headline text-xl font-semibold">{t('ai_assistant_title')}</h3>
+                  <p className="mt-1 text-muted-foreground">{t('ai_assistant_desc')}</p>
+                </div>
+                <div className="mt-2 flex flex-wrap justify-center gap-2">
+                  {suggestions.map(s => (
+                    <button
+                      key={s}
+                      type="button"
+                      className="rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground ring-1 ring-border/60 transition-colors hover:bg-muted/70 hover:text-foreground"
+                      onClick={() => setInput(s)}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           ) : (
             chatHistory.map(message => (
               <div key={message.id} className={cn('flex items-start gap-4', message.role === 'user' ? 'justify-end' : '')}>
@@ -89,8 +114,8 @@ export function ChatTab({ appState, chatHistory, setChatHistory }: ChatTabProps)
                   </Avatar>
                 )}
                 <div className={cn(
-                  'max-w-md rounded-lg p-3 text-sm',
-                  message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                  'max-w-md rounded-2xl p-3 text-sm leading-relaxed shadow-sm ring-1 ring-border/60',
+                  message.role === 'user' ? 'bg-primary text-primary-foreground ring-primary/20' : 'bg-card/70'
                 )}>
                   {message.content}
                 </div>
@@ -102,14 +127,14 @@ export function ChatTab({ appState, chatHistory, setChatHistory }: ChatTabProps)
                 <Avatar className="h-8 w-8">
                   <AvatarFallback><Sparkles className="h-4 w-4" /></AvatarFallback>
                 </Avatar>
-                <div className="max-w-md rounded-lg p-3 text-sm bg-muted animate-pulse">
+                <div className="max-w-md rounded-2xl p-3 text-sm bg-card/70 animate-pulse shadow-sm ring-1 ring-border/60">
                     {t('thinking')}
                 </div>
               </div>
             )}
         </div>
       </ScrollArea>
-      <div className="border-t bg-background p-4">
+      <div className="border-t bg-background/70 p-4 backdrop-blur">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             value={input}

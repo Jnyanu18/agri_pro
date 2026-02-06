@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart as BarChartIcon, CalendarDays, PackageCheck, Shovel, Trees } from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ReferenceArea, XAxis, YAxis } from 'recharts';
 import { Skeleton } from '../ui/skeleton';
 import { formatNumber } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
@@ -25,11 +25,13 @@ export function HarvestForecastTab({ result, isLoading }: HarvestForecastTabProp
 
   if (!result) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center h-[50vh]">
-        <BarChartIcon className="h-16 w-16 text-muted-foreground" />
-        <h3 className="font-headline text-xl font-semibold">{t('no_forecast_data_title')}</h3>
-        <p className="text-muted-foreground">{t('run_analysis_to_see_forecast')}</p>
-      </div>
+      <Card>
+        <CardContent className="flex h-[50vh] flex-col items-center justify-center gap-4 p-12 text-center">
+          <BarChartIcon className="h-16 w-16 text-muted-foreground" />
+          <h3 className="font-headline text-xl font-semibold">{t('no_forecast_data_title')}</h3>
+          <p className="text-muted-foreground">{t('run_analysis_to_see_forecast')}</p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -48,6 +50,8 @@ export function HarvestForecastTab({ result, isLoading }: HarvestForecastTabProp
   }));
 
   const totalHarvest = harvest_plan.reduce((a, b) => a + b.harvest_kg, 0);
+  const windowStart = harvestWindow?.start ? parseISO(harvestWindow.start).getTime() : null;
+  const windowEnd = harvestWindow?.end ? parseISO(harvestWindow.end).getTime() : null;
 
   return (
     <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
@@ -58,7 +62,7 @@ export function HarvestForecastTab({ result, isLoading }: HarvestForecastTabProp
             <Trees className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatNumber(yield_now_kg)} kg</div>
+            <div className="font-headline text-3xl font-semibold tabular-nums">{formatNumber(yield_now_kg)} kg</div>
             <p className="text-xs text-muted-foreground">{t('current_yield_desc')}</p>
           </CardContent>
         </Card>
@@ -68,7 +72,7 @@ export function HarvestForecastTab({ result, isLoading }: HarvestForecastTabProp
             <PackageCheck className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatNumber(sellable_kg)} kg</div>
+            <div className="font-headline text-3xl font-semibold tabular-nums">{formatNumber(sellable_kg)} kg</div>
             <p className="text-xs text-muted-foreground">{t('sellable_yield_desc')}</p>
           </CardContent>
         </Card>
@@ -99,7 +103,7 @@ export function HarvestForecastTab({ result, isLoading }: HarvestForecastTabProp
             <Shovel className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{formatNumber(totalHarvest)} kg</div>
+            <div className="font-headline text-3xl font-semibold tabular-nums">{formatNumber(totalHarvest)} kg</div>
             <p className="text-xs text-muted-foreground">{t('total_forecasted_desc')}</p>
           </CardContent>
         </Card>
@@ -114,19 +118,39 @@ export function HarvestForecastTab({ result, isLoading }: HarvestForecastTabProp
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px] w-full">
               <AreaChart data={formattedDaily} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid vertical={false} strokeDasharray="4 4" />
                  <XAxis 
                     dataKey="date" 
                     tickFormatter={(value) => format(new Date(value), 'MMM dd')}
                     type="number"
                     scale="time"
                     domain={['dataMin', 'dataMax']}
+                    tickLine={false}
+                    axisLine={false}
                 />
-                <YAxis unit="kg" />
+                <YAxis unit="kg" tickLine={false} axisLine={false} width={36} />
                 <ChartTooltip content={<ChartTooltipContent />} />
+                {windowStart && windowEnd ? (
+                  <ReferenceArea
+                    x1={windowStart}
+                    x2={windowEnd}
+                    fill="hsl(var(--primary))"
+                    fillOpacity={0.08}
+                    strokeOpacity={0}
+                  />
+                ) : null}
                 <Area type="monotone" dataKey="ready_kg" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.3} name={t('ready_kg')}/>
               </AreaChart>
             </ChartContainer>
+            {notes?.length ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {notes.slice(0, 2).map(note => (
+                  <div key={note} className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground ring-1 ring-border/60">
+                    {note}
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 

@@ -5,7 +5,6 @@ import { useUser } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Dashboard } from '@/components/agrivision/dashboard';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
@@ -33,8 +32,6 @@ export default function DashboardPage() {
   }
 
   return (
-    <SidebarProvider>
-      <Dashboard />
-    </SidebarProvider>
+    <Dashboard />
   );
 }

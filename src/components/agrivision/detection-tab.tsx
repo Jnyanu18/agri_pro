@@ -40,11 +40,13 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
 
   if (!imageUrl) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-muted-foreground/50 bg-card p-12 text-center">
-        <UploadCloud className="h-16 w-16 text-muted-foreground" />
-        <h3 className="font-headline text-xl font-semibold">{t('start_analysis_title')}</h3>
-        <p className="text-muted-foreground">{t('start_analysis_desc')}</p>
-      </div>
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center gap-4 p-12 text-center">
+          <UploadCloud className="h-16 w-16 text-muted-foreground" />
+          <h3 className="font-headline text-xl font-semibold">{t('start_analysis_title')}</h3>
+          <p className="text-muted-foreground">{t('start_analysis_desc')}</p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -58,7 +60,7 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="relative w-full aspect-video overflow-hidden rounded-lg border">
+            <div className="relative w-full aspect-video overflow-hidden rounded-xl ring-1 ring-border/60">
                 <Image 
                     src={imageUrl} 
                     alt="Ready for analysis" 
@@ -84,17 +86,23 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
         color: getStageColor(s.stage)
     })) : [];
 
+  const stageVariety = stages.filter(s => s.count > 0).length;
+  const reliability =
+    totalFruits === 0 ? "Low" : stageVariety >= 4 ? "High" : stageVariety >= 2 ? "Medium" : "Low";
+
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       <Card className="lg:col-span-2">
         <CardHeader>
           <CardTitle className="font-headline">{t('detection_result_for', { plant: plantType })}</CardTitle>
-          <CardDescription>
-            {summary || t('analyzed_image_summary', { count: detections })}
-          </CardDescription>
+          <CardDescription>{summary || t('analyzed_image_summary', { count: detections })}</CardDescription>
         </CardHeader>
         <CardContent>
           <ImageWithBoxes imageUrl={result.imageUrl} boxes={boxes} />
+          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+            <span className="inline-flex h-2 w-2 rounded-full bg-primary/80" />
+            Evidence overlays highlight detected fruit and stage confidence when boxes are available.
+          </div>
         </CardContent>
       </Card>
 
@@ -104,13 +112,13 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
             <CardTitle className="font-headline">{t('stage_classification')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-             {totalFruits > 0 && (
-                <div className="flex rounded-full overflow-hidden h-3">
+            {totalFruits > 0 ? (
+              <div className="flex h-2 overflow-hidden rounded-full bg-muted">
                 {maturityDistribution.filter(d => d.value > 0).map(d => (
-                    <div key={d.stage} style={{ width: `${d.value}%` }} className={d.color}></div>
+                  <div key={d.stage} style={{ width: `${d.value}%` }} className={d.color} />
                 ))}
-                </div>
-            )}
+              </div>
+            ) : null}
             <div className="space-y-2 text-sm">
               {stages.map(({ stage, count }) => (
                 <div key={stage} className="flex items-center justify-between">
@@ -118,9 +126,29 @@ export function DetectionTab({ result, isLoading, imageUrl }: DetectionTabProps)
                     <span className={cn("h-2 w-2 rounded-full", getStageColor(stage))} />
                     <span className="capitalize">{t(stage.toLowerCase(), { defaultValue: stage })}</span>
                   </div>
-                  <span className="font-medium">{count}</span>
+                  <span className="font-medium tabular-nums">{count}</span>
                 </div>
               ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-headline">AI evidence</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <div className="flex items-center justify-between">
+              <span>Model</span>
+              <span className="font-medium text-foreground">Gemini Vision</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Detections</span>
+              <span className="font-medium text-foreground tabular-nums">{detections}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Forecast reliability</span>
+              <span className="font-medium text-foreground">{reliability}</span>
             </div>
           </CardContent>
         </Card>
